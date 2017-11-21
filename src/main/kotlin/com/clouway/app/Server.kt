@@ -22,6 +22,8 @@ class Server(port: Int) {
 
         val context = ServletContextHandler(ServletContextHandler.SESSIONS)
 
+        val sessionCounter = SessionCounter()
+
         val mySqlDataSource = MysqlDataSource()
         mySqlDataSource.setUrl("jdbc:mysql://${System.getenv("DB_HOST")}/${System.getenv("DB_TABLE")}")
         mySqlDataSource.user = System.getenv("DB_USER")
@@ -32,20 +34,20 @@ class Server(port: Int) {
             override fun contextInitialized(sce: ServletContextEvent) {
                 val servletContext = sce.servletContext
                 servletContext.addServlet("Login page",
-                        LoginServlet(JdbcUserRepository(MySQLJdbcTemplate(mySqlDataSource), "Users"), config))
+                        LoginServlet(JdbcUserRepository(MySQLJdbcTemplate(mySqlDataSource), "Users"), config, sessionCounter))
                         .addMapping("/login")
                 servletContext.addServlet("Registration page", RegistrationServlet(
                         CompositeValidator(RegexValidationRule("username", "[a-zA-Z\\d]{4,15}",
-                        "Incorrect username.\nShould be between 4 and 15 characters long " +
-                                "and to not contain special symbols.\n"),
-                        RegexValidationRule("password", "^[a-zA-Z\\d]{6,30}\$",
-                                "Incorrect password.\nShould be between 6 and 30 characters long, " +
-                                        "and to not contain special symbols.")),
-                        JdbcUserRepository(MySQLJdbcTemplate(mySqlDataSource), "Users"), config))
+                                "Incorrect username.\nShould be between 4 and 15 characters long " +
+                                        "and to not contain special symbols.\n"),
+                                RegexValidationRule("password", "^[a-zA-Z\\d]{6,30}\$",
+                                        "Incorrect password.\nShould be between 6 and 30 characters long, " +
+                                                "and to not contain special symbols.")),
+                        JdbcUserRepository(MySQLJdbcTemplate(mySqlDataSource), "Users"), config, sessionCounter))
                         .addMapping("/registration")
                 servletContext.addServlet("Index page", IndexServlet())
                         .addMapping("/index")
-                servletContext.addServlet("Successful Registration", SuccessfulAuthorizationServlet())
+                servletContext.addServlet("Successful Registration", SuccessfulAuthorizationServlet(sessionCounter))
                         .addMapping("/home")
                 servletContext.addServlet("Resources", ResourceServlet())
                         .addMapping("/assets/*")

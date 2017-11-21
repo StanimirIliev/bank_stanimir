@@ -29,4 +29,17 @@ class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val tab
                         UserRowMapper())
         return if(list.isEmpty()) null else list.first()
     }
+
+    override fun getBalance(username: String, password: String, hash: Boolean): Float? {
+        if(hash) {
+            return  jdbcTemplate.getFloat("SELECT Balance FROM $table WHERE Username='$username' AND " +
+                    "Password='$password'",
+                    "Balance")
+        }
+        val salt = jdbcTemplate.getString("SELECT Salt FROM $table WHERE Username='$username'", "Salt")
+                ?: return null
+        return  jdbcTemplate.getFloat("SELECT Balance FROM $table WHERE Username='$username' AND " +
+                "Password='${DigestUtils.sha256Hex(salt + password)}'",
+                "Balance")
+    }
 }

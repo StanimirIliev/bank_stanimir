@@ -6,12 +6,13 @@ import freemarker.template.Configuration
 import freemarker.template.Template
 import freemarker.template.TemplateExceptionHandler
 import java.io.File
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class RegistrationServlet(private val validator: RequestValidator, private val userRepo: UserRepository,
-                          private val config: Configuration) : HttpServlet() {
+                          private val config: Configuration, private val sessionCounter: SessionCounter) : HttpServlet() {
 
     private val dataModel = HashMap<String, List<Error>>()
     lateinit var template: Template

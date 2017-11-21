@@ -1,16 +1,15 @@
 package com.clouway.app
 
-import com.clouway.app.core.User
 import com.clouway.app.core.UserRepository
 import freemarker.template.Configuration
 import freemarker.template.Template
-import freemarker.template.TemplateExceptionHandler
-import java.io.File
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class LoginServlet(private val userRepo: UserRepository, private val config: Configuration) : HttpServlet() {
+                   private val sessionCounter: SessionCounter) : HttpServlet() {
 
     lateinit var template: Template
 
