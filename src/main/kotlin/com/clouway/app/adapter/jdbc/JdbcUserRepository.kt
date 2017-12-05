@@ -4,6 +4,7 @@ import com.clouway.app.SaltedHash
 import com.clouway.app.UserRowMapper
 import com.clouway.app.core.JdbcTemplate
 import com.clouway.app.core.User
+import com.clouway.app.core.JdbcTemplate
 import com.clouway.app.core.UserRepository
 import org.apache.commons.codec.digest.DigestUtils
 

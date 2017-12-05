@@ -47,3 +47,4 @@ class RegistrationServlet(private val validator: RequestValidator, private val u
         }
     }
 }
+
