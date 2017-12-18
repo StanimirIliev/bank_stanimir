@@ -10,18 +10,18 @@ import javax.servlet.http.HttpServletResponse
 
 class HomePageServlet(private val sessionRepository: SessionRepository) : HttpServlet() {
     override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
-        if (req.session.getAttribute("username") != null) {
+        if (req.session.getAttribute("userId") != null) {
             if (req.getParameter("logout") != null) {
-                val cookie: Cookie? = req.cookies.find { it.name == "sessionId" }
+                val cookie: Cookie? = req.cookies.find { it.name == "id" }
                 if (cookie == null) {
                     resp.contentType = "text/html"
                     resp.sendError(HttpServletResponse.SC_CONFLICT,
-                            "Cookie with name 'sessionId' not found. Unable to delete session from DB.")
+                            "Cookie with name 'id' not found. Unable to delete session from DB.")
                 } else {
                     if (!sessionRepository.deleteSession(cookie.value)) {
                         resp.contentType = "text/html"
                         resp.sendError(HttpServletResponse.SC_CONFLICT,
-                                "The value of the cookie with name 'sessionId' was changed. Unable to delete session from DB.")
+                                "The value of the cookie with name 'id' was changed. Unable to delete session from DB.")
                     } else {
                         req.session.invalidate()
                         resp.sendRedirect("/index")

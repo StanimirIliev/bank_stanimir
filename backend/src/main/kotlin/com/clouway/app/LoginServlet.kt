@@ -1,6 +1,9 @@
 package com.clouway.app
 
-import com.clouway.app.core.*
+import com.clouway.app.core.Error
+import com.clouway.app.core.Session
+import com.clouway.app.core.SessionRepository
+import com.clouway.app.core.UserRepository
 import freemarker.template.Configuration
 import freemarker.template.Template
 import java.sql.Timestamp
@@ -11,7 +14,7 @@ import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class LoginServlet(private val userRepo: UserRepository, private val sessionRepository: SessionRepository,
+class LoginServlet(private val userRepository: UserRepository, private val sessionRepository: SessionRepository,
                    private val config: Configuration) : HttpServlet() {
 
     lateinit var template: Template
@@ -29,20 +32,24 @@ class LoginServlet(private val userRepo: UserRepository, private val sessionRepo
     override fun doPost(req: HttpServletRequest, resp: HttpServletResponse) {
         resp.contentType = "text/html; charset=utf-8"
         val out = resp.writer
-        val user: User? = userRepo.authenticate(req.getParameter("username"), req.getParameter("password"))
-        if (user == null) {
-            template.process(Error("Wrong username or password"), out)
+        if (!userRepository.authenticate(req.getParameter("username"), req.getParameter("password"))) {
+            template.process(Error("Wrong userId or password"), out)
+            return
+        }
+        val userId = userRepository.getUserId(req.getParameter("username"), req.getParameter("password"))
+        if (userId == null) {
+            template.process(Error("Error occurred while getting userId"), out)
             return
         }
         val session = req.getSession(true)
-        session.maxInactiveInterval = 2*60*60// two hours
-        session.setAttribute("username", user.username)
+        session.maxInactiveInterval = 2 * 60 * 60// two hours
+        session.setAttribute("userId", userId)
         var sessionId = getRandomString(20)
-        while(sessionRepository.getSession(sessionId) != null) {
-           sessionId = getRandomString(20)
+        while (sessionRepository.getSession(sessionId) != null) {
+            sessionId = getRandomString(20)
         }
-        resp.addCookie(Cookie("sessionId", sessionId))
-        sessionRepository.registerSession(Session(sessionId, user.username,
+        resp.addCookie(Cookie("id", sessionId))
+        sessionRepository.registerSession(Session(sessionId, userId,
                 Timestamp.valueOf(LocalDateTime.now().plusHours(8))))
         resp.sendRedirect("/home")
     }

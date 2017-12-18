@@ -1,27 +1,33 @@
 package com.clouway.app.core
 
+import java.sql.Timestamp
+
 interface SessionRepository {
 
     /**
-     * Returns true if the session was successfully registered in the DB
-     * false if this session is already registered
+     * Registers session in the DB
+     * @param session the DTO that would be registered
+     * @return true if the operation was successful, false if error occurred (like duplicating session's id)
      */
     fun registerSession(session: Session): Boolean
 
     /**
-     * Returns Session object by the session id
-     * null if the session was not found by this id or it was expired
+     * Gets session from the DB
+     * @param sessionId the id of the session
+     * @return Session DTO if there is a match with this id or null if there is not
      */
     fun getSession(sessionId: String): Session?
 
     /**
-     * Returns the count of all sessions that was not expired yet
+     * Gets the count of all active sessions
+     * @return the count of all active sessions
      */
     fun getSessionsCount(): Int
 
     /**
-     * Returns true if the operation was successful
-     * false if there was not found session with this id
+     * Deletes session from the DB
+     * @param sessionId the id of the session which should be deleted
+     * @return true if the operation was successful, false if error occurred
      */
     fun deleteSession(sessionId: String): Boolean
 }

@@ -1,7 +1,9 @@
 CREATE TABLE Sessions(
-    SessionId VARCHAR(255) NOT NULL,
-    Username VARCHAR(255) NOT NULL,
+    Id VARCHAR(255) NOT NULL,
+    UserId INT NOT NULL,
     ExpiresAt TIMESTAMP NOT NULL,
-    PRIMARY KEY(SessionId),
-    FOREIGN KEY(Username) REFERENCES Users(Username)
+    PRIMARY KEY(Id),
+    FOREIGN KEY(UserId) REFERENCES Users(Id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE KEY UserIdAndExpiresAt (UserId, ExpiresAt)
 )

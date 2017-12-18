@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class RegistrationServlet(private val userRepo: UserRepository,
+class RegistrationServlet(private val userRepository: UserRepository,
                           private val sessionRepository: SessionRepository,
                           private val validator: RequestValidator,
                           private val config: Configuration) : HttpServlet() {
@@ -33,25 +33,29 @@ class RegistrationServlet(private val userRepo: UserRepository,
         resp.contentType = "text/html; charset=utf-8"
         val out = resp.writer
         val errorList = validator.validate(req.parameterMap)
-        if(!errorList.isEmpty()) {
+        if (!errorList.isEmpty()) {
             dataModel.put("errors", errorList)
             template.process(dataModel.apply { put("errors", errorList) }, out)
             return
         }
-        val user = userRepo.registerUser(req.getParameter("username"), req.getParameter("password"))
-        if (user == null) {
-            template.process(dataModel.apply { put("errors",
-                    listOf(Error("This username is already taken"))) }, out)
+        if (!userRepository.registerUser(req.getParameter("username"), req.getParameter("password"))) {
+            template.process(dataModel.apply {
+                put("errors",
+                        listOf(Error("This userId is already taken")))
+            }, out)
         } else {
+            val userId = userRepository.getUserId(req.getParameter("username"), req.getParameter("password")) ?:
+                    throw IllegalArgumentException("Error occurred while getting userId")
+
             val session = req.getSession(true)
-            session.maxInactiveInterval = 2*60*60// two hours
-            session.setAttribute("username", user.username)
+            session.maxInactiveInterval = 2 * 60 * 60// two hours
+            session.setAttribute("userId", userId)
             var sessionId = getRandomString(20)
-            while(sessionRepository.getSession(sessionId) != null) {
+            while (sessionRepository.getSession(sessionId) != null) {
                 sessionId = getRandomString(20)
             }
-            resp.addCookie(Cookie("sessionId", sessionId))
-            sessionRepository.registerSession(Session(sessionId, user.username,
+            resp.addCookie(Cookie("id", sessionId))
+            sessionRepository.registerSession(Session(sessionId, userId,
                     Timestamp.valueOf(LocalDateTime.now().plusHours(8))))
             resp.sendRedirect("/home")
         }
