@@ -1,0 +1,43 @@
+.container__accounts {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.85);
+    border-radius: 20px;
+    padding: 15px;
+    width: 70%;
+    height: 80%;
+    left: 15%;
+    top: 10%;
+}
+.button--close {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 20px;
+    border-top-left-radius: 20px;
+}
+.container__options {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 50%;
+    height: 50%;
+    left: 25%;
+    top: 25%;
+}
+.container__options__item {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    color: #fff;
+    text-decoration: none;
+    align-items: baseline;
+    margin-bottom: 70px;
+}
+.icon {
+    margin-right: 50px;
+}
+.item__text {
+    font-size: 40pt;
+}
