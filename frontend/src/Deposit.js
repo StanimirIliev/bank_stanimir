@@ -76,7 +76,7 @@ class Deposit extends Component {
         }
         return (
             <div className="container__accounts">
-                <h1>Deposit to: {account.title}</h1>
+                <h1 className="account_menu__header">Deposit to: {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
                         <b>Balance:</b> {account.balance}
@@ -87,7 +87,7 @@ class Deposit extends Component {
                     <hr className="operation__splitter" />
                     <div className="container__operation" >
                         <div className="operation__name">Enter the amount of the deposit</div>
-                        <input className="operation__input" id="deposit" placeholder="e.g. 500"
+                        <input className="operation__input" placeholder="e.g. 500"
                             onChange={this.handleChange} />
                     </div>
                 </div>

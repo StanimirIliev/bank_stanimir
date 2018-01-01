@@ -36,7 +36,7 @@ class AccountDetails extends Component {
 
         return (
             <div className="container__accounts" >
-                <h1>Account:  {title}</h1>
+                <h1 className="account_menu__header">Account:  {title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
                         <b>Balance:</b> {balance}

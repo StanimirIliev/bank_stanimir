@@ -51,7 +51,7 @@ class AccountDetails extends Component {
     }
 
     render() {
-        const {loading, msg, title, balance, id, currency} = this.state
+        const {loading, msg, title, account, id} = this.state
         if (loading) {
             return (<Loading />)
         }
@@ -64,13 +64,13 @@ class AccountDetails extends Component {
 
         return (
             <div className="container__accounts" >
-                <h1>Are you sure you want to delete account:  {title}</h1>
+                <h1 className="account_menu__header">Are you sure you want to delete account:<br/>  {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
-                        <b>Balance:</b> {balance}
+                        <b>Balance:</b> {account.balance}
                     </div>
                     <div className="selected_account__currency">
-                        <b>Currency:</b> {currency}
+                        <b>Currency:</b> {account.currency}
                     </div>
                     <div className="selected_account__buttons">
                         <button className="button remove_account__buttons" onClick={() => {

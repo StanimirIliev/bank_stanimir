@@ -62,7 +62,7 @@ class ShowAccounts extends Component {
         }
         return (
             <div className="container__accounts" >
-                <h1 className="show_accounts__header">My accounts:</h1>
+                <h1 className="account_menu__header">My accounts:</h1>
                 <div className="show_accounts__container">
                     {accountsRendered}
                 </div>

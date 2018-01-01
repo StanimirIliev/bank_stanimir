@@ -61,7 +61,7 @@ class RemoveAccountsMenu extends Component {
         }
         return (
             <div className="container__accounts" >
-                <h1 className="show_accounts__header">Chose which account to remove</h1>
+                <h1 className="account_menu__header">Chose which account to remove</h1>
                 <div className="show_accounts__container">
                     {accountsRendered}
                 </div>

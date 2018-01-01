@@ -63,13 +63,13 @@ class NewAccount extends Component {
         }
         return (
             <div className="container__accounts">
-                <h1>Open a new account</h1>
+                <h1 className="account_menu__header">Open a new account</h1>
                 <div className="new_account__set_title" >
-                    <div>Title:</div>
+                    <div className="new_account__text">Title:</div>
                     <input className="new_account__input" onChange={this.handleTitleChange} />
                 </div>
                 <div className="new_account__set_currency">
-                    <div>Currency:</div>
+                    <div className="new_account__text">Currency:</div>
                     <select className="new_account__select" name="currency" onChange={this.handleCurrencyChange}>
                         <option value="bgn">BGN</option>
                         <option value="eur">EUR</option>

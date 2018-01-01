@@ -4,6 +4,7 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { BrowserRouter as Router } from 'react-router-dom'
 import MainMenu from './MainMenu'
+import './Responsiveness.css'
 
 
 const mock = new MockAdapter(axios, { delayResponse: 0 })
@@ -153,8 +154,12 @@ export default class App extends Component {
         return (
             <Router>
                 <div className="container" >
-                    <h1 className="message--greeting" >Welcome {this.state.username}</h1>
-                    <h1 className="message--active-users" >At this moment {this.state.activeUsers} users uses this site</h1>
+                    <img className="logo" src={require("./images/logo.png")}/>
+                    <div className="greetings">
+                        <h1 className="greetings__element">Welcome {this.state.username}</h1>
+                        <div className="greetings__element"><hr className="greetings--splitter" /></div>
+                        <h1 className="greetings__element">{this.state.activeUsers} active users</h1>
+                    </div>
                     <MainMenu />
                 </div>
             </Router>

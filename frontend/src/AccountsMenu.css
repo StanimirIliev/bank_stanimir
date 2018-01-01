@@ -35,8 +35,12 @@
     align-items: baseline;
     margin-bottom: 70px;
 }
+.container__options__item:hover {
+    filter: drop-shadow(2px 2px 5px #3171c7);
+}
 .icon {
     margin-right: 50px;
+    width: 45px;
 }
 .item__text {
     font-size: 40pt;
