@@ -7,9 +7,9 @@ interface SessionRepository {
     /**
      * Registers session in the DB
      * @param session the DTO that would be registered
-     * @return true if the operation was successful, false if error occurred (like duplicating session's id)
+     * @return the session id if the operation was successful, null if it was not
      */
-    fun registerSession(session: Session): Boolean
+    fun registerSession(session: Session): String?
 
     /**
      * Gets session from the DB
@@ -17,6 +17,14 @@ interface SessionRepository {
      * @return Session DTO if there is a match with this id or null if there is not
      */
     fun getSession(sessionId: String): Session?
+
+    /**
+     * Gets session id from the DB
+     * @param userId the id of the user
+     * @param expiresAt expiration timestamp of the session
+     * @return the session id or null if there is no match in the DB with these params
+     */
+    fun getSessionId(userId: Int, expiresAt: Timestamp): String?
 
     /**
      * Gets the count of all active sessions

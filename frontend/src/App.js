@@ -7,9 +7,10 @@ import MainMenu from './MainMenu'
 import './Responsiveness.css'
 
 
-const mock = new MockAdapter(axios, { delayResponse: 0 })
+const mock = new MockAdapter(axios)
 
 if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode')
     mock
         .onGet('/v1/activeUsers').reply(200, {
             activeUsers: 17
@@ -17,9 +18,6 @@ if (process.env.NODE_ENV === 'development') {
         .onGet('/v1/username').reply(200, {
             username: "user"
         })
-        // .onGet('/v1/accounts').reply(200, {
-        //   error: "Error occurred while getting cookie"
-        // })
         .onGet('/v1/accounts').reply(200, {
             content: [
                 {
@@ -36,9 +34,6 @@ if (process.env.NODE_ENV === 'development') {
                 }
             ]
         })
-        // .onGet('/v1/accounts').reply(200, {
-        //     content: []
-        // })
         .onGet('/v1/account', { params: { id: 100 } }).reply(200,
         {
             account: {
@@ -57,12 +52,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        /*
-        axios.get('/v1/executeDeposit', { params: { id: this.state.id, value: deposit } })
-            .then(resp => this.setState({msg: resp.data.msg, loading: false}))
-            .catch(error => this.setState({msg: error.data.msg, loading: false}))
-        */
-        .onGet('/v1/executeDeposit', {
+        .onPost('/v1/executeDeposit', {
             params: {
                 id: 100,
                 value: 100
@@ -71,7 +61,7 @@ if (process.env.NODE_ENV === 'development') {
         {
             msg: "Operation successful"
         })
-        .onGet('/v1/executeDeposit', {
+        .onPost('/v1/executeDeposit', {
             params: {
                 id: 101,
                 value: 100
@@ -80,11 +70,11 @@ if (process.env.NODE_ENV === 'development') {
         {
             msg: "Operation successful"
         })
-        .onGet('/v1/executeDeposit').reply(400,
+        .onPost('/v1/executeDeposit').reply(400,
         {
             msg: "Operation unsuccessful"
         })
-        .onGet('/v1/executeWithdraw', {
+        .onPost('/v1/executeWithdraw', {
             params: {
                 id: 100,
                 value: 100
@@ -93,7 +83,7 @@ if (process.env.NODE_ENV === 'development') {
         {
             msg: "Operation successful"
         })
-        .onGet('/v1/executeWithdraw', {
+        .onPost('/v1/executeWithdraw', {
             params: {
                 id: 101,
                 value: 100
@@ -102,11 +92,11 @@ if (process.env.NODE_ENV === 'development') {
         {
             msg: "Operation successful"
         })
-        .onGet('/v1/executeWithdraw').reply(400,
+        .onPost('/v1/executeWithdraw').reply(400,
         {
             msg: "Operation unsuccessful"
         })
-        .onGet('/v1/newAccount', {
+        .onPost('/v1/newAccount', {
             params: {
                 title: 'acc',
                 currency: 'bgn'
@@ -114,19 +104,22 @@ if (process.env.NODE_ENV === 'development') {
         }).reply(200, {
             msg: "Operation successful"
         })
-        .onGet('/v1/newAccount').reply(400, {
+        .onPost('/v1/newAccount').reply(400, {
             msg: "You already have account with such a title"
         })
-        .onGet('/v1/removeAccount', {
+        .onDelete('/v1/removeAccount', {
             params: {
                 id: 100
             }
         }).reply(200, {
             msg: "Operation successful"
         })
-        .onGet('/v1/removeAccount').reply(400, {
+        .onDelete('/v1/removeAccount').reply(400, {
             msg: "Error with the server"
         })
+}
+else {
+    mock.restore()
 }
 
 export default class App extends Component {
@@ -154,7 +147,7 @@ export default class App extends Component {
         return (
             <Router>
                 <div className="container" >
-                    <img className="logo" src={require("./images/logo.png")}/>
+                    <img className="logo" src={require("./images/logo.png")} />
                     <div className="greetings">
                         <h1 className="greetings__element">Welcome {this.state.username}</h1>
                         <div className="greetings__element"><hr className="greetings--splitter" /></div>

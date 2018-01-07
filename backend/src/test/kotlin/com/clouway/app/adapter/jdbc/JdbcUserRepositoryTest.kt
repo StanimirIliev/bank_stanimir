@@ -55,11 +55,23 @@ class JdbcUserRepositoryTest {
     @Test
     fun getIdOfRegisteredUser() {
         userRepository.registerUser("user123", "password789")
-        assertThat(userRepository.getUserId("user123", "password789"), `is`(any(Int::class.java)))
+        assertThat(userRepository.getUserId("user123"), `is`(any(Int::class.java)))
     }
 
     @Test
     fun tryToGetIdOfUnregisteredUser() {
-        assertThat(userRepository.getUserId("unregisteredUsername", "password789"), `is`(nullValue()))
+        assertThat(userRepository.getUserId("unregisteredUsername"), `is`(equalTo(-1)))
+    }
+
+    @Test
+    fun getUsernameOfRegisteredUser() {
+        userRepository.registerUser("user123", "password789")
+        val userId = userRepository.getUserId("user123")
+        assertThat(userRepository.getUsername(userId), `is`(equalTo("user123")))
+    }
+
+    @Test
+    fun tryToGetUsernameOfUnregisteredUser() {
+        assertThat(userRepository.getUsername(1), `is`(nullValue()))
     }
 }

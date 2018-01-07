@@ -21,7 +21,7 @@ class AccountDetails extends Component {
             .then(resp => {
                 this.setState({ loading: false, account: resp.data.account })
             })
-            .catch(error => this.setState({ loading: false, error: error.data.content }))
+            .catch(error => this.setState({ loading: false, error: error.data.msg }))
     }
 
     render() {
@@ -29,9 +29,13 @@ class AccountDetails extends Component {
             return (<Loading />)
         }
 
-        const title = this.state.account.title
-        const balance = this.state.account.balance
         const currency = this.state.account.currency
+        const title = this.state.account.title
+        const balance =
+            new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: currency
+            }).format(this.state.account.balance)
         const id = this.state.id
 
         return (
@@ -41,13 +45,10 @@ class AccountDetails extends Component {
                     <div className="selected_account__balance">
                         <b>Balance:</b> {balance}
                     </div>
-                    <div className="selected_account__currency">
-                        <b>Currency:</b> {currency}
-                    </div>
                     <div className="selected_account__buttons">
                         <Link className="linkButton selected_account__button" to={`/deposit/${id}`}>Deposit</Link>
                         <Link className="linkButton selected_account__button" to={`/withdraw/${id}`}>Withdraw</Link>
-                    </div> 
+                    </div>
                 </div>
                 <Link className="linkButton button--close" to="/accounts">Back</Link>
             </div>

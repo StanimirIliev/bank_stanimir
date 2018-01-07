@@ -12,17 +12,19 @@ import NewAccount from './NewAccount'
 import RemoveAccountsMenu from './RemoveAccountsMenu'
 import removeAccount from './RemoveAccount'
 
+import axios from 'axios'
+
 const Menu = (match) => (
     <div className="main-menu" >
-        <Link className="linkButton button--primary" to="/accountsMenu">Accounts</Link>
+        <Link className="linkButton button--primary" to="/main">Accounts</Link>
         <a className="linkButton button--primary" href="/logout">Log out</a>
-        <Route path="/accountsMenu" component={AccountsMenu} />
+        <Route path="/main" component={AccountsMenu} />
         <Route path="/accounts" component={ShowAccounts} />
         <Route path="/account/:id/" component={AccountDetails} />
         <Route path="/deposit/:id/" component={Deposit} />
         <Route path="/withdraw/:id" component={Withdraw} />
         <Route path="/newAccount" component={NewAccount} />
-        <Route path="/removeAccountsMenu" component={RemoveAccountsMenu} />
+        <Route path="/removeAccounts" component={RemoveAccountsMenu} />
         <Route path="/removeAccount/:id" component={removeAccount} />
     </div>
 )

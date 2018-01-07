@@ -33,7 +33,7 @@ class RemoveAccountsMenu extends Component {
             return (
                 <div className="container__accounts container__show_accounts" >
                     <h1 className="show_accounts__header">You have no accounts yet.</h1>
-                    <Link className="linkButton button--close" to="/accountsMenu">Back</Link>
+                    <Link className="linkButton button--close" to="/main">Back</Link>
                 </div>
             )
         }
@@ -65,7 +65,7 @@ class RemoveAccountsMenu extends Component {
                 <div className="show_accounts__container">
                     {accountsRendered}
                 </div>
-                <Link className="linkButton button--close" to="/accountsMenu">Back</Link>
+                <Link className="linkButton button--close" to="/main">Back</Link>
             </div>
         )
     }

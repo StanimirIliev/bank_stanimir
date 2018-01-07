@@ -5,6 +5,7 @@ import com.clouway.app.core.Session
 import com.mysql.cj.jdbc.MysqlDataSource
 import org.hamcrest.CoreMatchers.*
 import org.junit.Assert.assertThat
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import java.io.FileReader
@@ -42,19 +43,36 @@ class JdbcSessionRepositoryTest {
     @Test
     fun getSessionThatWasRegistered() {
         userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123", "somePassword")
+        val userId = getUserId("user123")
         val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(2))
-        val session = Session("hdwasd", userId, expiresAt)
-        assertThat(sessionRepository.registerSession(session),
-                `is`(equalTo(true)))
-        assertThat(sessionRepository.getSession("hdwasd"), `is`(equalTo(session)))
+        val session = Session(userId, expiresAt)
+        val sessionId = sessionRepository.registerSession(session)
+        assertThat(sessionRepository.getSession(sessionId!!), `is`(equalTo(session)))
+    }
+
+    @Test
+    fun getSessionIdOfRegisteredSession() {
+        userRepository.registerUser("user123", "somePassword")
+        val userId = getUserId("user123")
+        val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(2))
+        val sessionId = sessionRepository.registerSession(Session(userId, expiresAt))!!
+        assertThat(sessionRepository.getSessionId(userId, expiresAt), `is`(equalTo(sessionId)))
+    }
+
+    @Test
+    fun tryToGetSessionIdOfUnregisteredSession() {
+        userRepository.registerUser("user123", "somePassword")
+        val userId = getUserId("user123")
+        val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(2))
+        val wrongTimestamp = Timestamp.valueOf(LocalDateTime.now().plusHours(1))
+        val sessionId = sessionRepository.registerSession(Session(userId, wrongTimestamp))!!
+        assertThat(sessionRepository.getSessionId(userId, expiresAt.apply{}), `is`(nullValue()))
     }
 
     @Test
     fun tryToBindSessionToUnregisteredUser() {
-        val session = Session("hdwasd", 1, Timestamp.valueOf(LocalDateTime.now()))
-        assertThat(sessionRepository.registerSession(session),
-                `is`(equalTo(false)))
+        val session = Session(1, Timestamp.valueOf(LocalDateTime.now()))
+        assertThat(sessionRepository.registerSession(session), `is`(nullValue()))
     }
 
     @Test
@@ -65,41 +83,30 @@ class JdbcSessionRepositoryTest {
     @Test
     fun tryToGetSessionThatWasExpired() {
         userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123", "somePassword")
+        val userId = getUserId("user123")
         val expiresAt = Timestamp.valueOf(LocalDateTime.now().minusHours(1))
-        sessionRepository.registerSession(Session("hdwasd", userId, expiresAt))
-        assertThat(sessionRepository.getSession("hdwasd"), `is`(nullValue()))
-    }
-
-    @Test
-    fun tryToRegisterTwoSessionsWithTheSameId() {
-        userRepository.registerUser("user123", "somePassword")
-        val firstUserId = getUserId("user123", "somePassword")
-        userRepository.registerUser("anotherUser", "somePassword")
-        val secondUserId = getUserId("anotherUser", "somePassword")
-        val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(1))
-        sessionRepository.registerSession(Session("hdwasd", firstUserId, expiresAt))
-        assertThat(sessionRepository.registerSession(Session("hdwasd", secondUserId, expiresAt)),
-                `is`(equalTo(false)))
+        val sessionId = sessionRepository.registerSession(Session(userId, expiresAt))
+        assertThat(sessionRepository.getSession(sessionId!!), `is`(nullValue()))
     }
 
     @Test
     fun getActiveSessionsCount() {
         assertThat(sessionRepository.getSessionsCount(), `is`(equalTo(0)))
         userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123", "somePassword")
+        val userId = getUserId("user123")
         val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(2))
-        sessionRepository.registerSession(Session("hdwasd", userId, expiresAt))
+        sessionRepository.registerSession(Session(userId, expiresAt))
         assertThat(sessionRepository.getSessionsCount(), `is`(equalTo(1)))
     }
 
     @Test
     fun deleteSessionThatWasRegistered() {
         userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123", "somePassword")
+        val userId = getUserId("user123")
         val expiresAt = Timestamp.valueOf(LocalDateTime.now().plusHours(2))
-        sessionRepository.registerSession(Session("hdwasd", userId, expiresAt))
-        assertThat(sessionRepository.deleteSession("hdwasd"), `is`(equalTo(true)))
+        val sessionId = sessionRepository.registerSession(Session(userId, expiresAt))
+        assertThat(sessionRepository.deleteSession(sessionId!!), `is`(equalTo(true)))
+        assertThat(sessionRepository.getSession(sessionId), `is`(nullValue()))
     }
 
     @Test
@@ -107,10 +114,7 @@ class JdbcSessionRepositoryTest {
         assertThat(sessionRepository.deleteSession("notExistingId"), `is`(equalTo(false)))
     }
 
-    private fun getUserId(username: String, password: String): Int {
-        return userRepository.getUserId(username, password) ?:
-                throw IllegalArgumentException("Could not get user id")
-
-
+    private fun getUserId(username: String): Int {
+        return userRepository.getUserId(username)
     }
 }

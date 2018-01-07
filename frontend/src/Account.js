@@ -8,10 +8,12 @@ const Account = ({ title, balance, currency }) => (
       <b>Name:</b> {title}
     </div>
     <div className="container__account__balance">
-      <b>Balance:</b> {balance}
-    </div>
-    <div className="container__account__currency">
-      <b>Currency:</b> {currency}
+      <b>Balance:</b> {
+        new Intl.NumberFormat('de-DE', {
+          style: 'currency',
+          currency: currency
+        }).format(balance)
+      }
     </div>
   </div>
 )

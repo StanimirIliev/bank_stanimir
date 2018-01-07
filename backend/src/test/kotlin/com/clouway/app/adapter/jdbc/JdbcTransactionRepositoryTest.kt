@@ -1,6 +1,8 @@
 package com.clouway.app.adapter.jdbc
 
 import com.clouway.app.MySQLJdbcTemplate
+import com.clouway.app.core.Account
+import com.clouway.app.core.Currency
 import com.clouway.app.core.Operation
 import com.clouway.app.core.Transaction
 import com.mysql.cj.jdbc.MysqlDataSource
@@ -18,8 +20,10 @@ class JdbcTransactionRepositoryTest {
 
     private val table = "Transactions"
     private val userTable = "Users"
+    private val accountTable = "Accounts"
     private lateinit var transactionRepository: JdbcTransactionRepository
     private lateinit var userRepository: JdbcUserRepository
+    private lateinit var accountRepository: JdbcAccountRepository
 
     @Before
     fun setUp() {
@@ -28,6 +32,7 @@ class JdbcTransactionRepositoryTest {
         mySqlDataSource.setPassword(System.getenv("DB_PASS"))
         transactionRepository = JdbcTransactionRepository(MySQLJdbcTemplate(mySqlDataSource), table)
         userRepository = JdbcUserRepository(MySQLJdbcTemplate(mySqlDataSource), userTable)
+        accountRepository = JdbcAccountRepository(MySQLJdbcTemplate(mySqlDataSource), transactionRepository, accountTable)
         val statement = mySqlDataSource.connection.createStatement()
         if (statement.executeQuery("SHOW TABLES LIKE '$userTable'").next()) {//  check if the table exists
             statement.execute("DELETE FROM $userTable")//   clears table
@@ -39,20 +44,27 @@ class JdbcTransactionRepositoryTest {
         } else {
             statement.execute(FileReader("schema/$table.sql").readText())// if the table does not exists create it
         }
+        if (statement.executeQuery("SHOW TABLES LIKE '$accountTable'").next()) {//  check if the table exists
+            statement.execute("DELETE FROM $accountTable")//   clears table
+        } else {
+            statement.execute(FileReader("schema/$accountTable.sql").readText())// if the table does not exists create it
+        }
     }
 
     @Test
     fun getTransactionThatWasRegistered() {
         userRepository.registerUser("user", "password")
-        val userId = getUserId("user", "password")
-        val transaction = Transaction(userId, Timestamp.valueOf(LocalDateTime.now()), Operation.DEPOSIT, 5f)
+        val userId = getUserId("user")
+        accountRepository.registerAccount(Account("Some fund", userId, Currency.BGN, 0f))
+        val accountId = getAccountId("Some fund", userId)
+        val transaction = Transaction(userId, accountId, Timestamp.valueOf(LocalDateTime.now()), Operation.DEPOSIT, 5f)
         assertThat(transactionRepository.registerTransaction(transaction), `is`(equalTo(true)))
         assertThat(transactionRepository.getTransactions(transaction.userId), `is`(equalTo(listOf(transaction))))
     }
 
     @Test
     fun tryToRegisterTransactionBoundedToUserIdThatDoesNotExists() {
-        assertThat(transactionRepository.registerTransaction(Transaction(1,
+        assertThat(transactionRepository.registerTransaction(Transaction(1, 1,
                 Timestamp.valueOf(LocalDateTime.now()), Operation.DEPOSIT, 5f)), `is`(equalTo(false)))
     }
 
@@ -64,22 +76,26 @@ class JdbcTransactionRepositoryTest {
     @Test
     fun getIdOfRegisteredTransaction() {
         userRepository.registerUser("user", "password")
-        val userId = getUserId("user", "password")
-        val transaction = Transaction(userId, Timestamp.valueOf(LocalDateTime.now()), Operation.DEPOSIT, 5f)
+        val userId = getUserId("user")
+        accountRepository.registerAccount(Account("Some fund", userId, Currency.BGN, 0f))
+        val accountId = getAccountId("Some fund", userId)
+        val transaction = Transaction(userId, accountId, Timestamp.valueOf(LocalDateTime.now()), Operation.DEPOSIT, 5f)
         transactionRepository.registerTransaction(transaction)
-        assertThat(transactionRepository.getTransactionId(transaction.userId, transaction.onDate),
+        assertThat(transactionRepository.getTransactionId(transaction.userId, accountId, transaction.onDate),
                 `is`(any(Int::class.java)))
     }
 
     @Test
     fun tryToGetIdOfUnregisteredTransaction() {
-        assertThat(transactionRepository.getTransactionId(1, Timestamp.valueOf(LocalDateTime.now())), `is`(nullValue()))
+        assertThat(transactionRepository.getTransactionId(1, 1, Timestamp.valueOf(LocalDateTime.now())),
+                `is`(equalTo(-1)))
     }
 
-    private fun getUserId(username: String, password: String): Int {
-        return userRepository.getUserId(username, password) ?:
-                throw IllegalArgumentException("Could not get user id")
+    private fun getUserId(username: String): Int {
+        return userRepository.getUserId(username)
+    }
 
-
+    private fun getAccountId(title: String, userId: Int): Int {
+        return accountRepository.getAccountId(title, userId)
     }
 }

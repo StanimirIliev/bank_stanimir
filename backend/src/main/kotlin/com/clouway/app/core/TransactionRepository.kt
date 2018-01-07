@@ -24,5 +24,5 @@ interface TransactionRepository {
      * @param onDate the timestamp in which the user is made this transaction
      * @return the id of the transaction or null if there is no match with these parameters
      */
-    fun getTransactionId(userId: Int, onDate: Timestamp): Int?
+    fun getTransactionId(userId: Int, accountId: Int, onDate: Timestamp): Int
 }

@@ -34,40 +34,67 @@ class JdbcAccountRepository(private val jdbcTemplate: JdbcTemplate,
         }
         if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId") == 1) {
             val userId = getUserId(accountId) ?: return false
-            return transactionRepository.registerTransaction(Transaction(userId,
+            return transactionRepository.registerTransaction(Transaction(userId, accountId,
                     Timestamp.valueOf(LocalDateTime.now()), if (amount < 0) Operation.WITHDRAW else Operation.DEPOSIT,
                     amount))
         }
         return false
     }
 
-    override fun getTitle(accountId: Int): String? {
-        val list = jdbcTemplate.fetch("SELECT Title FROM $table WHERE Id=$accountId",
-                object : RowMapper<String> {
-                    override fun fetch(rs: ResultSet): String {
-                        return rs.getString("Title")
-                    }
-                })
-        return if (list.isEmpty()) null else list.first()
-    }
-
-    override fun getAccountId(title: String, userId: Int): Int? {
+    override fun getAccountId(title: String, userId: Int): Int {
         val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE Title='$title' AND UserId=$userId",
                 object : RowMapper<Int> {
                     override fun fetch(rs: ResultSet): Int {
                         return rs.getInt("Id")
                     }
                 })
-        return if (list.isEmpty()) null else list.first()
+        return if (list.isEmpty()) -1 else list.first()
     }
 
-    override fun getUserId(accountId: Int): Int? {
+    override fun getUserId(accountId: Int): Int {
         val list = jdbcTemplate.fetch("SELECT UserId FROM $table WHERE Id=$accountId",
                 object : RowMapper<Int> {
                     override fun fetch(rs: ResultSet): Int {
                         return rs.getInt("UserId")
                     }
                 })
+        return if (list.isEmpty()) -1 else list.first()
+    }
+
+    override fun getAccount(accountId: Int): Account? {
+        val list = jdbcTemplate.fetch("SELECT * FROM $table WHERE Id=$accountId",
+                object : RowMapper<Account> {
+                    override fun fetch(rs: ResultSet): Account {
+                        return Account(rs.getString("Title"), rs.getInt("UserId"),
+                                Currency.valueOf(rs.getString("Currency")), rs.getFloat("Balance"),
+                                rs.getInt("Id"))
+                    }
+                })
         return if (list.isEmpty()) null else list.first()
+    }
+
+    override fun getAllAccounts(userId: Int): List<Account> {
+        return jdbcTemplate.fetch("SELECT * FROM $table WHERE UserId=$userId",
+                object : RowMapper<Account> {
+                    override fun fetch(rs: ResultSet): Account {
+                        return Account(rs.getString("Title"), userId,
+                                Currency.valueOf(rs.getString("Currency")), rs.getFloat("Balance"),
+                                rs.getInt("Id"))
+                    }
+                })
+    }
+
+    override fun removeAccount(accountId: Int): Boolean {
+        return jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1
+    }
+
+    override fun authenticate(accountId: Int, userId: Int): Boolean {
+        val list = jdbcTemplate.fetch("SELECT UserId FROM $table WHERE Id=$accountId",
+                object: RowMapper<Int> {
+                    override fun fetch(rs: ResultSet): Int {
+                        return rs.getInt("UserId")
+                    }
+                })
+        return !list.isEmpty() && list.first() == userId
     }
 }

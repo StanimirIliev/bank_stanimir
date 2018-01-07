@@ -1,6 +1,6 @@
 CREATE TABLE Accounts (
     Id INT NOT NULL AUTO_INCREMENT,
-    Title VARCHAR(255) NOT NULL,
+    Title VARCHAR(255) NOT NULL UNIQUE,
     UserId INT NOT NULL,
     Currency ENUM('BGN', 'EUR') NOT NULL,
     Balance FLOAT NOT NULL,

@@ -9,7 +9,7 @@ class NewAccount extends Component {
     constructor() {
         super()
         this.state = {
-            currency: "bgn",
+            currency: "BGN",
             title: null,
             loading: false,
             message: null
@@ -20,9 +20,7 @@ class NewAccount extends Component {
 
     createNewAccount() {
         this.setState({ loading: true })
-        console.log(this.state.title)
-        console.log(this.state.currency)
-        axios.get('/v1/newAccount', {
+        axios.post('/v1/newAccount', {
             params: {
                 title: this.state.title,
                 currency: this.state.currency
@@ -59,7 +57,7 @@ class NewAccount extends Component {
             return (<Loading />)
         }
         if (message != null) {
-            return (<Message returnPath="accountsMenu" messageClass={message.messageClass} content={message.content} />)
+            return (<Message returnPath="/main" messageClass={message.messageClass} content={message.content} />)
         }
         return (
             <div className="container__accounts">
@@ -71,12 +69,12 @@ class NewAccount extends Component {
                 <div className="new_account__set_currency">
                     <div className="new_account__text">Currency:</div>
                     <select className="new_account__select" name="currency" onChange={this.handleCurrencyChange}>
-                        <option value="bgn">BGN</option>
-                        <option value="eur">EUR</option>
+                        <option value="BGN">BGN</option>
+                        <option value="EUR">EUR</option>
                     </select>
                 </div>
                 <button className="button new_account__button" onClick={() => { this.createNewAccount() }}>Create</button>
-                <Link className="linkButton button--close" to="/accountsMenu">Back</Link>
+                <Link className="linkButton button--close" to="/main">Back</Link>
             </div>
         )
     }

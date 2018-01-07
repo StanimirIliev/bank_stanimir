@@ -17,7 +17,7 @@ const AccountsMenu = () => (
                     Add new account
                 </div>
             </Link>
-            <Link to="/removeAccountsMenu" className="container__options__item">
+            <Link to="/removeAccounts" className="container__options__item">
                 <img className="icon" src={require("./icons/remove.png")} />
                 <div className="item__text">
                     Delete account

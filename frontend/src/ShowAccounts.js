@@ -21,7 +21,7 @@ class ShowAccounts extends Component {
             .then(resp => {
                 this.setState({ loading: false, accounts: resp.data.content })
             })
-            .catch(err => this.setState({ loading: false, error: err.data.content }))
+            .catch(err => this.setState({ loading: false, error: err.data.msg }))
     }
 
     render() {
@@ -34,7 +34,7 @@ class ShowAccounts extends Component {
             return (
                 <div className="container__accounts container__show_accounts" >
                     <h1 className="show_accounts__header">You have no accounts yet.</h1>
-                    <Link className="linkButton button--close" to="/accountsMenu">Back</Link>
+                    <Link className="linkButton button--close" to="/main">Back</Link>
                 </div>
             )
         }
@@ -66,7 +66,7 @@ class ShowAccounts extends Component {
                 <div className="show_accounts__container">
                     {accountsRendered}
                 </div>
-                <Link className="linkButton button--close" to="/accountsMenu">Back</Link>
+                <Link className="linkButton button--close" to="/main">Back</Link>
             </div>
         )
     }

@@ -1,11 +1,12 @@
 CREATE TABLE Transactions(
     Id INT NOT NULL AUTO_INCREMENT,
     UserId INT NOT NULL,
+    AccountId INT NOT NULL,
     OnDate TIMESTAMP NOT NULL,
     Operation ENUM('DEPOSIT', 'WITHDRAW') NOT NULL,
     Amount FLOAT NOT NULL,
     PRIMARY KEY(Id),
     FOREIGN KEY(UserId) REFERENCES Users(Id)
     ON UPDATE CASCADE ON DELETE CASCADE,
-    UNIQUE KEY UserIdAndOnDate (UserId, OnDate)
+    UNIQUE KEY UserIdAccountIdAndOnDate (UserId, AccountId, OnDate)
 )

@@ -39,10 +39,10 @@ class Withdraw extends Component {
 
     executeWithdraw() {
         this.setState({ loading: true })
-        axios.get('/v1/executeWithdraw', {
+        axios.post('/v1/executeWithdraw', {
             params: {
                 id: parseInt(this.state.id),
-                value: parseInt(this.state.withdrawValue)
+                value: parseFloat(this.state.withdrawValue)
             }
         })
             .then(resp => this.setState({
@@ -79,10 +79,12 @@ class Withdraw extends Component {
                 <h1 className="account_menu__header">Withdraw from: {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
-                        <b>Balance:</b> {account.balance}
-                    </div>
-                    <div className="selected_account__currency">
-                        <b>Currency:</b> {account.currency}
+                        <b>Balance:</b> {
+                            new Intl.NumberFormat('de-DE', {
+                                style: 'currency',
+                                currency: account.currency
+                            }).format(account.balance)
+                        }
                     </div>
                     <hr className="operation__splitter" />
                     <div className="container__operation" >

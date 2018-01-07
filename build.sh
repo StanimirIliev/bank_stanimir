@@ -13,7 +13,6 @@ mv tmpFolder/Bank.jar build/
 rm -rf tmpFolder/
 cd frontend/
 npm run build
-mv build/logo.png build/static/
 mv build/{index.html,static/} ../build/
 rm -rf build/
 cd $calledFrom

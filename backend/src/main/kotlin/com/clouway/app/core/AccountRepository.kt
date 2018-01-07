@@ -28,24 +28,47 @@ interface AccountRepository {
     fun updateBalance(accountId: Int, amount: Float): Boolean
 
     /**
-     * Gets the title of the account by its id
-     * @param accountId the id of the account
-     * @return the title of the account or null if there is no account with such a id
-     */
-    fun getTitle(accountId: Int): String?
-
-    /**
      * Gets the account id
      * @param title the title of account
      * @param userId the user id of account
      * @return the id of this account or null if there is no account registered with these parameters
      */
-    fun getAccountId(title: String, userId: Int): Int?
+    fun getAccountId(title: String, userId: Int): Int
 
     /**
      * Gets user id by its account id
      * @param accountId the id of the user's account
      * @return the id of the user or null if there is no account with such a id
      */
-    fun getUserId(accountId: Int): Int?
+    fun getUserId(accountId: Int): Int
+
+    /**
+     * Gets all accounts by userId
+     * @param userId the id of the user
+     * @return list with all accounts registered on this userId
+     */
+    fun getAllAccounts(userId: Int): List<Account>
+
+    /**
+     * Gets account by its id
+     * @param accountId the id of the desired account
+     * @return the account with this id or null if there is no account with such a id
+     */
+    fun getAccount(accountId: Int): Account?
+
+    /**
+     * Removes account from the DB
+     * @param userId the id of the user (Used for authorization)
+     * @param accountId the id of the account
+     * @return true if the account was removed successful, false if was not
+     */
+    fun removeAccount(accountId: Int): Boolean
+
+    /**
+     * Check if this account belongs to this user
+     * @param accountId the id of the account
+     * @param userId the id of the user
+     * @return true if this account belongs to this user, false if does not
+     */
+    fun authenticate(accountId: Int, userId: Int): Boolean
 }

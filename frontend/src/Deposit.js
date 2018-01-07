@@ -37,10 +37,10 @@ class Deposit extends Component {
 
     executeDeposit() {
         this.setState({ loading: true })
-        axios.get('/v1/executeDeposit', {
+        axios.post('/v1/executeDeposit', {
             params: {
                 id: parseInt(this.state.id),
-                value: parseInt(this.state.depositValue)
+                value: parseFloat(this.state.depositValue)
             }
         })
             .then(resp => this.setState({
@@ -53,7 +53,7 @@ class Deposit extends Component {
             .catch(error => this.setState({
                 msg: {
                     content: error.response.data.msg,
-                    messageClass: 'message--negative'  
+                    messageClass: 'message--negative'
                 },
                 loading: false
             }))
@@ -79,10 +79,12 @@ class Deposit extends Component {
                 <h1 className="account_menu__header">Deposit to: {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
-                        <b>Balance:</b> {account.balance}
-                    </div>
-                    <div className="selected_account__currency">
-                        <b>Currency:</b> {account.currency}
+                        <b>Balance:</b> {
+                            new Intl.NumberFormat('de-DE', {
+                                style: 'currency',
+                                currency: account.currency
+                            }).format(account.balance)
+                        }
                     </div>
                     <hr className="operation__splitter" />
                     <div className="container__operation" >
