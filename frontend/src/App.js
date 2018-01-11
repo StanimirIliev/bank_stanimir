@@ -59,7 +59,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onPost('/v1/executeDeposit', {
             params: {
@@ -68,11 +68,11 @@ if (process.env.NODE_ENV === 'development') {
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onPost('/v1/executeDeposit').reply(400,
         {
-            msg: "Operation unsuccessful"
+            message: "Operation unsuccessful"
         })
         .onPost('/v1/executeWithdraw', {
             params: {
@@ -81,7 +81,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onPost('/v1/executeWithdraw', {
             params: {
@@ -90,11 +90,11 @@ if (process.env.NODE_ENV === 'development') {
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onPost('/v1/executeWithdraw').reply(400,
         {
-            msg: "Operation unsuccessful"
+            message: "Operation unsuccessful"
         })
         .onPost('/v1/newAccount', {
             params: {
@@ -102,21 +102,69 @@ if (process.env.NODE_ENV === 'development') {
                 currency: 'bgn'
             }
         }).reply(200, {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onPost('/v1/newAccount').reply(400, {
-            msg: "You already have account with such a title"
+            message: "You already have account with such a title"
         })
         .onDelete('/v1/removeAccount', {
             params: {
                 id: 100
             }
         }).reply(200, {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
         .onDelete('/v1/removeAccount').reply(400, {
-            msg: "Error with the server"
+            message: "Error with the server"
         })
+        .onGet('/v1/transactions/1', {
+            params: {
+                pageSize: 20
+            }
+        }).reply(200, {
+            transactions: [
+                {
+                    dateTime: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    account: 'Fund for something',
+                    operation: 'DEPOSIT',
+                    amount: 250.57,
+                    currency: 'EUR'
+                },
+                {
+                    dateTime: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    account: 'Fund for other thing',
+                    operation: 'WITHDRAW',
+                    amount: 14000,
+                    currency: 'BGN'
+                },
+            ]
+        })
+        .onGet('/v1/transactions/2').reply(200, {transactions:[]})
+        .onGet('/v1/transactions/count').reply(200, {transactionsCount: 200})
 }
 else {
     mock.restore()

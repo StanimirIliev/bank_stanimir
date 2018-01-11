@@ -37,7 +37,7 @@ class AccountDetails extends Component {
             .then(response => this.setState({
                 loading: false,
                 msg: {
-                    content: response.data.msg,
+                    content: response.data.message,
                     messageClass: 'message--positive'
                 }
             }))
