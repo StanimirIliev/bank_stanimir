@@ -12,13 +12,19 @@ interface AccountRepository {
     /**
      * Updates the balance of specific account
      * @param accountId the id of the account which balance to update
+     * @param userId the id of the user which request this update
      * @param amount the amount to add to the balance of the account
      * For withdraw amount should be less than zero
      * For deposit amount should be greater than zero
-     * @return true if the operation was successful, false if the withdraw was greater than the balance
-     * or other error
+     * @return OperationResponse object
+     * OperationResponse messages:
+     * incorrect-id
+     * low-balance
+     * invalid-request
+     * successful
+     * error
      */
-    fun updateBalance(accountId: Int, amount: Float): Boolean
+    fun updateBalance(accountId: Int, userId: Int, amount: Float): OperationResponse
 
 
     /**
@@ -32,9 +38,13 @@ interface AccountRepository {
      * Removes account from the DB
      * @param userId the id of the user (Used for authorization)
      * @param accountId the id of the account
-     * @return true if the account was removed successful, false if was not
+     * @return OperationResponse object
+     * OperationResponse messages:
+     * account-not-exist
+     * successful
+     * error
      */
-    fun removeAccount(accountId: Int): Boolean
+    fun removeAccount(accountId: Int, userId: Int): OperationResponse
 
     /**
      * Gets user account

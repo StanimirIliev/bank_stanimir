@@ -23,21 +23,21 @@ class JdbcAccountRepository(
         return if (affectedRows != 1 || list.isEmpty()) -1 else list.first()
     }
 
-    override fun updateBalance(accountId: Int, amount: Float): Boolean {
-        val balance = getBalance(accountId) ?: return false
+    override fun updateBalance(accountId: Int, userId: Int, amount: Float): OperationResponse {
+        val balance = getBalance(accountId) ?:
+                return OperationResponse(false, "incorrect-id")
         if (amount + balance < 0) {
-            return false
+            return OperationResponse(false, "low-balance")
         }
         if (amount == 0f) {
-            return true//   No need to update
+            return OperationResponse(false, "invalid-request")
         }
-        if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId") == 1) {
-            val userId = getUserId(accountId) ?: return false
-            return transactionRepository.registerTransaction(Transaction(userId, accountId,
-                    LocalDateTime.now(), if (amount < 0) Operation.WITHDRAW else Operation.DEPOSIT,
-                    amount))
+        if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId") == 1 &&
+                transactionRepository.registerTransaction(Transaction(userId, accountId, LocalDateTime.now(),
+                        if (amount < 0) Operation.WITHDRAW else Operation.DEPOSIT, amount))) {
+            return OperationResponse(true, "successful")
         }
-        return false
+        return OperationResponse(false, "error")
     }
 
     override fun getAllAccounts(userId: Int): List<Account> {
@@ -51,8 +51,14 @@ class JdbcAccountRepository(
                 })
     }
 
-    override fun removeAccount(accountId: Int): Boolean {
-        return jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1
+    override fun removeAccount(accountId: Int, userId: Int): OperationResponse {
+        if (getUserAccount(userId, accountId) == null) {
+            return OperationResponse(false, "account-not-exist")
+        }
+        if (jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1) {
+            return OperationResponse(true, "successful")
+        }
+        return OperationResponse(false, "error")
     }
 
     override fun getUserAccount(userId: Int, accountId: Int): Account? {
@@ -63,7 +69,7 @@ class JdbcAccountRepository(
                                 Currency.valueOf(rs.getString("Currency")), rs.getFloat("Balance"), accountId)
                     }
                 })
-        return if(list.isEmpty()) null else list.first()
+        return if (list.isEmpty()) null else list.first()
     }
 
     private fun getBalance(accountId: Int): Float? {
@@ -71,16 +77,6 @@ class JdbcAccountRepository(
                 object : RowMapper<Float> {
                     override fun fetch(rs: ResultSet): Float {
                         return rs.getFloat("Balance")
-                    }
-                })
-        return if (list.isEmpty()) null else list.first()
-    }
-
-    private fun getUserId(accountId: Int): Int? {
-        val list = jdbcTemplate.fetch("SELECT UserId FROM $table WHERE Id=$accountId",
-                object : RowMapper<Int> {
-                    override fun fetch(rs: ResultSet): Int {
-                        return rs.getInt("UserId")
                     }
                 })
         return if (list.isEmpty()) null else list.first()
