@@ -1,0 +1,9 @@
+CREATE TABLE Sessions(
+    Id VARCHAR(255) NOT NULL,
+    UserId INT NOT NULL,
+    CreatedOn TIMESTAMP NOT NULL,
+    PRIMARY KEY(Id),
+    FOREIGN KEY(UserId) REFERENCES Users(Id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE KEY UserIdAndCreatedOn (UserId, CreatedOn)
+)
