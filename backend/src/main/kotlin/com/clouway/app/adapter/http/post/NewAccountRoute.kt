@@ -7,6 +7,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
+import java.time.LocalDateTime
 
 class NewAccountRoute(
         private val sessionRepository: SessionRepository,
@@ -23,13 +24,13 @@ class NewAccountRoute(
         if (req.cookie("sessionId") == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
             logger.error("Error occurred while getting the cookie sessionId")
-            return "{\"msg\":\"Error occurred while getting the cookie sessionId\"}"
+            return "{\"message\":\"Error occurred while getting the cookie sessionId\"}"
         } else {
-            session = sessionRepository.getSession(req.cookie("sessionId"))
+            session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId"), LocalDateTime.now())
             if (session == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
                 logger.error("Invalid sessionId")
-                return "{\"msg\":\"Invalid sessionId\"}"
+                return "{\"message\":\"Invalid sessionId\"}"
             }
         }
 
@@ -40,20 +41,20 @@ class NewAccountRoute(
         when {
             title == null || currency == null -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"Cannot open new account. No title or currency passed with " +
+                return "{\"message\":\"Cannot open new account. No title or currency passed with " +
                         "the request\"}"
             }
             accounts.any { it.title == title } -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"You have already account with such a title.\"}"
+                return "{\"message\":\"You have already account with such a title.\"}"
             }
-            accountRepository.registerAccount(Account(title, session.userId, currency, 0f)) -> {
+            accountRepository.registerAccount(Account(title, session.userId, currency, 0f)) != -1 -> {
                 resp.status(HttpStatus.CREATED_201)
-                return "{\"msg\":\"New account opened successful.\"}"
+                return "{\"message\":\"New account opened successful.\"}"
             }
             else -> {
                 resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                return "{\"msg\":\"Unable to open new account.\"}"
+                return "{\"message\":\"Unable to open new account.\"}"
             }
         }
     }

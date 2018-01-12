@@ -9,7 +9,7 @@ import java.nio.charset.Charset
 class IndexPageRoute : Route {
     override fun handle(request: Request, resp: Response): Any {
         resp.type("text/html")
-        return App::class.java.getResourceAsStream("/index.html")
+        return IndexPageRoute::class.java.getResourceAsStream("/index.html")
                 .readBytes().toString(Charset.defaultCharset())
     }
 

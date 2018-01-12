@@ -17,4 +17,18 @@ interface UserRepository {
      * @return true if there is match with these parameters in the DB, false if there is not
      */
     fun authenticate(username: String, password: String): Boolean
+
+    /**
+     * Gets username by id
+     * @param id the id of the user
+     * @return the username of this user or null if there is no match in the DB
+     */
+    fun getUsername(id: Int): String?
+
+    /**
+     * Gets id by username
+     * @param username the username of the user
+     * @return the id of the user or -1 it there is no match in the DB
+     */
+    fun getUserId(username: String): Int
 }

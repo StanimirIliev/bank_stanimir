@@ -9,6 +9,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
+import java.time.LocalDateTime
 
 class AccountDetailsRoute(
         private val sessionRepository: SessionRepository,
@@ -22,33 +23,27 @@ class AccountDetailsRoute(
         if (req.cookie("sessionId") == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
             logger.error("Error occurred while getting the cookie sessionId")
-            return "{\"msg\":\"Error occurred while getting the cookie sessionId\"}"
+            return "{\"message\":\"Error occurred while getting the cookie sessionId\"}"
         } else {
-            session = sessionRepository.getSession(req.cookie("sessionId"))
+            session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId"), LocalDateTime.now())
             if (session == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
                 logger.error("Invalid sessionId")
-                return "{\"msg\":\"Invalid sessionId\"}"
+                return "{\"message\":\"Invalid sessionId\"}"
             }
         }
 
-        val accountId = req.queryParams("id")
-        when {
-            accountId == null -> {
+        val accountId = req.params("id")
+        if (accountId == null) {
+            resp.status(HttpStatus.BAD_REQUEST_400)
+            return "{\"message\":\"Cannot get account. No account id passed with the request.\"}"
+        } else {
+            val account = accountRepository.getUserAccount(session.userId, accountId.toInt())
+            if (account == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"Cannot get account. No account id passed with the request.\"}"
+                return "{\"message\":\"Account not found.\"}"
             }
-            accountRepository.getAccount(accountId.toInt()) == null -> {
-                resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"Account not found.\"}"
-            }
-            accountRepository.authenticate(accountId.toInt(), session.userId) -> {
-                return "{\"account\":${Gson().toJson(accountRepository.getAccount(accountId.toInt()))}}"
-            }
-            else -> {
-                resp.status(HttpStatus.UNAUTHORIZED_401)
-                return "{\"msg\":\"Cannot view details for this account. Access denied.\"}"
-            }
+            return "{\"account\":${Gson().toJson(account)}}"
         }
     }
 }

@@ -9,6 +9,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
+import java.time.LocalDateTime
 
 class AccountsListRoute(
         private val sessionRepository: SessionRepository,
@@ -24,7 +25,7 @@ class AccountsListRoute(
             logger.error("Error occurred while getting the cookie sessionId")
             return "{\"msg\":\"Error occurred while getting the cookie sessionId\"}"
         } else {
-            session = sessionRepository.getSession(req.cookie("sessionId"))
+            session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId"), LocalDateTime.now())
             if (session == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
                 logger.error("Invalid sessionId")

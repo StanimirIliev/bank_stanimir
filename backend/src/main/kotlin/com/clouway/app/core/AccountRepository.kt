@@ -21,11 +21,10 @@ interface AccountRepository {
      * incorrect-id
      * low-balance
      * invalid-request
+     * access-denied
      * successful
-     * error
      */
     fun updateBalance(accountId: Int, userId: Int, amount: Float): OperationResponse
-
 
     /**
      * Gets all accounts by userId
