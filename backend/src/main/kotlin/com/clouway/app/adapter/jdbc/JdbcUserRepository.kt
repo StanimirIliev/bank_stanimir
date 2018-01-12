@@ -1,32 +1,62 @@
 package com.clouway.app.adapter.jdbc
 
 import com.clouway.app.SaltedHash
-import com.clouway.app.UserRowMapper
 import com.clouway.app.core.JdbcTemplate
-import com.clouway.app.core.User
+import com.clouway.app.core.RowMapper
 import com.clouway.app.core.UserRepository
 import org.apache.commons.codec.digest.DigestUtils
+import java.sql.ResultSet
 
 class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val table: String) : UserRepository {
-    /**
-     * Returns false if the user is already registered
-     * Returns true if the user is registered successfully
-     */
-    override fun registerUser(username: String, password: String): User? {
+
+    override fun registerUser(username: String, password: String): Boolean {
         val saltedHash = SaltedHash(30, password)
         val affectedRows = jdbcTemplate
-                .execute("INSERT INTO Users(Username, Password, Salt) VALUES('$username', '${saltedHash.hash}', " +
+                .execute("INSERT INTO $table(Username, Password, Salt) VALUES('$username', '${saltedHash.hash}', " +
                         "'${saltedHash.salt}')")
-        return if (affectedRows != 1) null else authenticate(username, password)
+        return affectedRows == 1
     }
 
-    override fun authenticate(username: String, password: String): User? {
-        val salt = jdbcTemplate.getString("SELECT Salt FROM $table WHERE Username='$username'", "Salt")
-                ?: return null
+    override fun authenticate(username: String, password: String): Boolean {
+        val salt = jdbcTemplate.fetch("SELECT Salt FROM $table WHERE Username='$username'",
+                object : RowMapper<String> {
+                    override fun fetch(rs: ResultSet): String {
+                        return rs.getString("Salt")
+                    }
+                })
+        if (salt.isEmpty()) {
+            return false
+        }
         val list = jdbcTemplate
                 .fetch("SELECT * FROM $table WHERE Username='$username' " +
-                        "AND Password='${DigestUtils.sha256Hex(salt + password)}'",
-                        UserRowMapper())
-        return if(list.isEmpty()) null else list.first()
+                        "AND Password='${DigestUtils.sha256Hex(salt.first() + password)}'",
+                        object : RowMapper<Boolean> {
+                            override fun fetch(rs: ResultSet): Boolean {
+                                return rs.getString("Username") != null
+                            }
+                        })
+        return if (list.isEmpty()) false else list.first()
+    }
+
+    override fun getUserId(username: String): Int {
+        val list = jdbcTemplate
+                .fetch("SELECT Id FROM $table WHERE Username='$username'",
+                        object : RowMapper<Int> {
+                            override fun fetch(rs: ResultSet): Int {
+                                return rs.getInt("Id")
+                            }
+                        })
+        return if (list.isEmpty()) -1 else list.first()
+    }
+
+    override fun getUsername(id: Int): String? {
+        val list = jdbcTemplate
+                .fetch("SELECT Username FROM $table WHERE Id=$id",
+                        object : RowMapper<String> {
+                            override fun fetch(rs: ResultSet): String {
+                                return rs.getString("Username")
+                            }
+                        })
+        return if (list.isEmpty()) null else list.first()
     }
 }
