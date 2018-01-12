@@ -58,7 +58,7 @@ class JdbcAccountRepositoryTest {
         userRepository.registerUser("user123", "password123")
         val userId = getUserId("user123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
-        assertThat(accountRepository.updateBalance(accountId, 30f), `is`(equalTo(true)))
+        assertThat(accountRepository.updateBalance(accountId, userId, 30f).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
     }
 
@@ -67,7 +67,7 @@ class JdbcAccountRepositoryTest {
         userRepository.registerUser("user123", "password123")
         val userId = getUserId("user123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 50f))
-        assertThat(accountRepository.updateBalance(accountId, -20f), `is`(equalTo(true)))
+        assertThat(accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
     }
 
@@ -76,13 +76,13 @@ class JdbcAccountRepositoryTest {
         userRepository.registerUser("user123", "password123")
         val userId = getUserId("user123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
-        assertThat(accountRepository.updateBalance(accountId, -20f), `is`(equalTo(false)))
+        assertThat(accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(false)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(0f)))
     }
 
     @Test
     fun tryToMakeTransactionWithUnregisteredAccountId() {
-        assertThat(accountRepository.updateBalance(-1, 20f), `is`(equalTo(false)))
+        assertThat(accountRepository.updateBalance(-1, -1, 20f).successful, `is`(equalTo(false)))
     }
 
     @Test
@@ -104,7 +104,7 @@ class JdbcAccountRepositoryTest {
                 accountsTable
         )
         val accountId = fakeAccountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
-        fakeAccountRepository.updateBalance(accountId, 30f)
+        fakeAccountRepository.updateBalance(accountId, userId, 30f)
     }
 
     @Test
@@ -164,13 +164,13 @@ class JdbcAccountRepositoryTest {
         userRepository.registerUser("user123", "password123")
         val userId = getUserId("user123")
         val accountId = accountRepository.registerAccount(Account("Fund for something", userId, Currency.BGN, 0f))
-        assertThat(accountRepository.removeAccount(accountId), `is`(equalTo(true)))
+        assertThat(accountRepository.removeAccount(accountId, userId).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId), `is`(nullValue()))
     }
 
     @Test
     fun tryToRemoveUnregisteredAccount() {
-        assertThat(accountRepository.removeAccount(1), `is`(equalTo(false)))
+        assertThat(accountRepository.removeAccount(-1, -1).successful, `is`(equalTo(false)))
     }
 
     private fun getUserId(username: String): Int {
