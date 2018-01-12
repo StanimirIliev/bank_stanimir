@@ -46,4 +46,24 @@ class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val tab
                         })
         return if (list.isEmpty()) false else list.first()
     }
+
+    override fun getUsername(id: Int): String? {
+        val list = jdbcTemplate.fetch("SELECT Username FROM $table WHERE Id=$id",
+                object : RowMapper<String> {
+                    override fun fetch(rs: ResultSet): String {
+                        return rs.getString("Username")
+                    }
+                })
+        return if (list.isEmpty()) null else list.first()
+    }
+
+    override fun getUserId(username: String): Int {
+        val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE Username='$username'",
+                object : RowMapper<Int> {
+                    override fun fetch(rs: ResultSet): Int {
+                        return rs.getInt("Id")
+                    }
+                })
+        return if (list.isEmpty()) -1 else list.first()
+    }
 }

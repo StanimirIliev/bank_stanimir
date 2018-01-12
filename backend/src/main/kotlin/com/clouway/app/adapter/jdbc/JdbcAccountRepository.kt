@@ -32,12 +32,13 @@ class JdbcAccountRepository(
         if (amount == 0f) {
             return OperationResponse(false, "invalid-request")
         }
-        if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId") == 1 &&
+        if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId " +
+                "AND UserId=$userId") == 1 &&
                 transactionRepository.registerTransaction(Transaction(userId, accountId, LocalDateTime.now(),
                         if (amount < 0) Operation.WITHDRAW else Operation.DEPOSIT, amount))) {
             return OperationResponse(true, "successful")
         }
-        return OperationResponse(false, "error")
+        return OperationResponse(false, "access-denied")
     }
 
     override fun getAllAccounts(userId: Int): List<Account> {

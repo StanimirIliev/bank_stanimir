@@ -8,6 +8,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
+import java.time.LocalDateTime
 
 class RemoveAccountRoute(
         private val sessionRepository: SessionRepository,
@@ -21,35 +22,35 @@ class RemoveAccountRoute(
         if (req.cookie("sessionId") == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
             logger.error("Error occurred while getting the cookie sessionId")
-            return "{\"msg\":\"Error occurred while getting the cookie sessionId\"}"
+            return "{\"message\":\"Error occurred while getting the cookie sessionId\"}"
         } else {
-            session = sessionRepository.getSession(req.cookie("sessionId"))
+            session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId"), LocalDateTime.now())
             if (session == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
                 logger.error("Invalid sessionId")
-                return "{\"msg\":\"Invalid sessionId\"}"
+                return "{\"message\":\"Invalid sessionId\"}"
             }
         }
 
-        val accountId = req.queryParams("id")
-        when {
-            accountId == null -> {
-                resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"Cannot remove this account. No account id passed with " +
-                        "the request\"}"
-            }
-            !accountRepository.authenticate(accountId.toInt(), session.userId) -> {
-                resp.status(HttpStatus.BAD_REQUEST_400)
-                return "{\"msg\":\"Cannot remove this account. Access denied.\"}"
-            }
-            accountRepository.removeAccount(accountId.toInt()) -> {
+        val accountId = req.params("id")
+        if (accountId == null) {
+            resp.status(HttpStatus.BAD_REQUEST_400)
+            return "{\"message\":\"Cannot remove this account. No account id passed with " +
+                    "the request\"}"
+        } else {
+            val operationResponse = accountRepository.removeAccount(accountId.toInt(), session.userId)
+
+            if (operationResponse.successful) {
                 resp.status(HttpStatus.OK_200)
-                return "{\"msg\":\"This account has been removed successfully.\"}"
+                return "{\"message\":\"${"This account has been removed successfully."}\"}"
             }
-            else -> {
-                resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                return "{\"msg\":\"Cannot remove this account.\"}"
+            if (operationResponse.message == "account-not-exist") {
+                resp.status(HttpStatus.BAD_REQUEST_400)
+                return "{\"message\":\"This account does not exist.\"}"
             }
+            resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+            logger.fatal("Error occurred while removing account $accountId, requested by user ${session.userId}")
+            return "{\"message\":\"Error occurred while removing this account.\"}"
         }
     }
 }

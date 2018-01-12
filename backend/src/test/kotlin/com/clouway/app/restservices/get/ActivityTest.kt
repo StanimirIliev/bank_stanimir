@@ -1,6 +1,6 @@
 package com.clouway.app.restservices.get
 
-import com.clouway.app.adapter.http.get.UsernameRoute
+import com.clouway.app.adapter.http.get.ActivityRoute
 import com.clouway.app.core.Session
 import com.clouway.rules.DataStoreRule
 import org.apache.http.client.CookieStore
@@ -22,22 +22,21 @@ import java.nio.charset.Charset
 import java.time.LocalDateTime
 
 
-class UsernameQueryTest {
+class ActivityTest {
     @Rule
     @JvmField
     val dataStoreRule = DataStoreRule()
 
     private val port = 8080
     private val domain = "127.0.0.1"
-    private val url = "http://$domain:$port/v1/username"
+    private val url = "http://$domain:$port/v1/activity"
 
     @Before
     fun setUp() {
         port(port)
-        get("/v1/username", UsernameRoute(
+        get("/v1/activity", ActivityRoute(
                 dataStoreRule.sessionRepository,
-                dataStoreRule.userRepository,
-                Logger.getLogger(UsernameQueryTest::class.java)
+                Logger.getLogger(ActivityTest::class.java)
         ))
         awaitInitialization()
     }
@@ -48,14 +47,14 @@ class UsernameQueryTest {
     }
 
     @Test
-    fun getUsernameAsRegisteredUser() {
+    fun getActiveUsersCountAsRegisteredUserJsonData() {
         val cookieStore = createSessionAndCookie("user123", "password789")
         val client = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build()
         val request = HttpGet(url)
         val response = client.execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"username\":\"user123\"}")))
+        assertThat(responseContent, `is`(equalTo("{\"activity\":1}")))
     }
 
     private fun createSessionAndCookie(username: String, password: String): CookieStore {

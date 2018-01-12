@@ -1,13 +1,10 @@
 package com.clouway.app.restservices.post
 
-import com.clouway.app.MySQLJdbcTemplate
 import com.clouway.app.adapter.http.post.NewAccountRoute
-import com.clouway.app.adapter.jdbc.JdbcAccountRepository
-import com.clouway.app.adapter.jdbc.JdbcSessionRepository
-import com.clouway.app.adapter.jdbc.JdbcTransactionRepository
-import com.clouway.app.adapter.jdbc.JdbcUserRepository
-import com.clouway.app.core.*
-import com.mysql.cj.jdbc.MysqlDataSource
+import com.clouway.app.core.Account
+import com.clouway.app.core.Currency
+import com.clouway.app.core.Session
+import com.clouway.rules.DataStoreRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
@@ -21,53 +18,28 @@ import org.hamcrest.CoreMatchers.equalTo
 import org.junit.After
 import org.junit.Assert.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import spark.Spark.*
-import java.io.FileReader
 import java.nio.charset.Charset
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 class NewAccountQueryTest {
 
-    private val mySqlDataSource = MysqlDataSource()
+    @Rule
+    @JvmField
+    val dataStoreRule = DataStoreRule()
 
     private val port = 8080
-    private val accountsTable = "Accounts"
-    private val sessionTable = "Sessions"
-    private val userTable = "Users"
-    private val transactionsTable = "Transactions"
     private val domain = "127.0.0.1"
-    private lateinit var sessionRepository: SessionRepository
-    private lateinit var userRepository: UserRepository
-    private lateinit var accountRepository: AccountRepository
-    private lateinit var transactionRepository: TransactionRepository
+    private val url = "http://$domain:$port/v1/accounts"
 
     @Before
     fun setUp() {
-        mySqlDataSource.setUrl("jdbc:mysql://${System.getenv("DB_HOST")}/${System.getenv("DB_TABLE")}")
-        mySqlDataSource.user = System.getenv("DB_USER")
-        mySqlDataSource.setPassword(System.getenv("DB_PASS"))
-        val jdbcTemplate = MySQLJdbcTemplate(mySqlDataSource)
-        sessionRepository = JdbcSessionRepository(jdbcTemplate, sessionTable, userTable)
-        userRepository = JdbcUserRepository(jdbcTemplate, userTable)
-        transactionRepository = JdbcTransactionRepository(jdbcTemplate, transactionsTable)
-        accountRepository = JdbcAccountRepository(jdbcTemplate, transactionRepository, accountsTable)
-        val statement = mySqlDataSource.connection.createStatement()
-        if (statement.executeQuery("SHOW TABLES LIKE '$userTable'").next()) {//  check if the accountsTable exists
-            statement.execute("DELETE FROM $userTable")//   clears accountsTable
-        } else {
-            statement.execute(FileReader("schema/$userTable.sql").readText())// if the accountsTable does not exists create it
-        }
-        if (statement.executeQuery("SHOW TABLES LIKE '$accountsTable'").next()) {//  check if the accountsTable exists
-            statement.execute("DELETE FROM $accountsTable")//   clears accountsTable
-        } else {
-            statement.execute(FileReader("schema/$accountsTable.sql").readText())// if the accountsTable does not exists create it
-        }
         port(port)
-        post("/v1/newAccount", NewAccountRoute(
-                sessionRepository,
-                accountRepository,
+        post("/v1/accounts", NewAccountRoute(
+                dataStoreRule.sessionRepository,
+                dataStoreRule.accountRepository,
                 Logger.getLogger(NewAccountQueryTest::class.java)
         ))
         awaitInitialization()
@@ -80,58 +52,59 @@ class NewAccountQueryTest {
 
     @Test
     fun addNewAccount() {
-        val cookieStore = createSessionAndCookie("user123", "password789")
-        val request = HttpPost("http://$domain:$port/v1/newAccount")
+        val cookieStore = createSessionAndCookies("user123", "password789")
+        val request = HttpPost(url)
         val params = StringEntity("{\"params\":{\"title\":\"SomeFund\",\"currency\":\"BGN\"}}")
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.CREATED_201)))
-        assertThat(responseContent, `is`(equalTo("{\"msg\":\"New account opened successful.\"}")))
+        assertThat(responseContent, `is`(equalTo("{\"message\":\"New account opened successful.\"}")))
     }
 
     @Test
     fun tryToAddTwoAccountsWithTheSameName() {
-        val cookieStore = createSessionAndCookie("user123", "password789")
-        val userId = getUserId("user123")
-        accountRepository.registerAccount(Account("SomeFund", userId, Currency.BGN, 0f))
-        val request = HttpPost("http://$domain:$port/v1/newAccount")
+        val cookieStore = createSessionAndCookies("user123", "password789")
+        val userId = cookieStore.cookies.find { it.name == "userId" }!!.value.toInt()
+        dataStoreRule.accountRepository.registerAccount(Account("SomeFund", userId, Currency.BGN, 0f))
+        val request = HttpPost(url)
         val params = StringEntity("{\"params\":{\"title\":\"SomeFund\",\"currency\":\"BGN\"}}")
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
-        assertThat(responseContent, `is`(equalTo("{\"msg\":\"You have already account with such a title.\"}")))
+        assertThat(responseContent, `is`(equalTo("{\"message\":\"You have already account with such a title.\"}")))
     }
 
     @Test
     fun tryToAddAccountWithoutPassingAnParameter() {
-        val cookieStore = createSessionAndCookie("user123", "password789")
-        val request = HttpPost("http://$domain:$port/v1/newAccount")
+        val cookieStore = createSessionAndCookies("user123", "password789")
+        val request = HttpPost(url)
         val params = StringEntity("{\"params\":{\"title\":\"SomeFund\"}}")
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
-        assertThat(responseContent, `is`(equalTo("{\"msg\":\"Cannot open new account. No title or currency " +
+        assertThat(responseContent, `is`(equalTo("{\"message\":\"Cannot open new account. No title or currency " +
                 "passed with the request\"}")))
     }
 
-    private fun getUserId(username: String): Int {
-        return userRepository.getUserId(username)
-    }
-
-    private fun createSessionAndCookie(username: String, password: String): CookieStore {
-        userRepository.registerUser(username, password)
-        val userId = getUserId(username)
-        val sessionId = sessionRepository.registerSession(
-                Session(userId, Timestamp.valueOf(LocalDateTime.now().plusHours(2)))) ?:
+    private fun createSessionAndCookies(username: String, password: String): CookieStore {
+        val userId = dataStoreRule.userRepository.registerUser(username, password)
+        val sessionId = dataStoreRule.sessionRepository.registerSession(
+                Session(
+                        userId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now().plusHours(2)
+                )) ?:
                 throw Exception("Unable to register the session")
         val cookieStore = BasicCookieStore()
-        val cookie = BasicClientCookie("sessionId", sessionId)
-        cookie.domain = domain
-        cookie.path = "/"
-        cookieStore.addCookie(cookie)
+        val cookies = ArrayList<BasicClientCookie>()
+        cookies.add(BasicClientCookie("sessionId", sessionId))
+        cookies.add(BasicClientCookie("userId", userId.toString()))
+        cookies.forEach { it.domain = domain }
+        cookies.forEach { it.path = "/" }
+        cookieStore.addCookies(cookies.toTypedArray())
         return cookieStore
     }
 }

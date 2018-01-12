@@ -6,11 +6,10 @@ import spark.Request
 import spark.Response
 import spark.Route
 import java.io.StringWriter
-import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.*
 
-class RegistrationPageRoutePOST(private val userRepository: UserRepository,
+class RegistrationPageRoutePost(private val userRepository: UserRepository,
                                 private val sessionRepository: SessionRepository,
                                 private val validator: RequestValidator,
                                 private val config: Configuration) : Route {
@@ -34,8 +33,8 @@ class RegistrationPageRoutePOST(private val userRepository: UserRepository,
                 }, out)
                 return out.toString()
             }
-            !userRepository.registerUser(req.queryParams("username"),
-                    req.queryParams("password")) -> {
+            userRepository.registerUser(req.queryParams("username"),
+                    req.queryParams("password")) == -1 -> {
                 template.process(dataModel.apply {
                     put("errors",
                             listOf(Error("This username is already taken")))
@@ -47,8 +46,11 @@ class RegistrationPageRoutePOST(private val userRepository: UserRepository,
                 val session = req.session(true)
                 session.maxInactiveInterval(2 * 60 * 60)// two hours
                 session.attribute("userId", userId)
-                val sessionId = sessionRepository.registerSession(Session(userId,
-                        Timestamp.valueOf(LocalDateTime.now().plusHours(8))))
+                val sessionId = sessionRepository.registerSession(Session(
+                        userId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now().plusHours(2)
+                ))
                 resp.cookie("sessionId", sessionId)
                 return resp.redirect("/home")
             }

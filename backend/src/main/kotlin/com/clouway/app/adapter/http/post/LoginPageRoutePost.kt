@@ -9,7 +9,6 @@ import spark.Request
 import spark.Response
 import spark.Route
 import java.io.StringWriter
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 class LoginPageRoutePost(private val userRepository: UserRepository, private val sessionRepository: SessionRepository,
@@ -19,15 +18,18 @@ class LoginPageRoutePost(private val userRepository: UserRepository, private val
         resp.type("text/html")
         val out = StringWriter()
         if (!userRepository.authenticate(req.queryParams("username"), req.queryParams("password"))) {
-            template.process(Error("Wrong userId or password"), out)
+            template.process(Error("Wrong username or password"), out)
             return out.toString()
         }
         val userId = userRepository.getUserId(req.queryParams("username"))
         val session = req.session(true)
         session.maxInactiveInterval(2 * 60 * 60)// two hours
         session.attribute("userId", userId)
-        val sessionId = sessionRepository.registerSession(Session(userId,
-                Timestamp.valueOf(LocalDateTime.now().plusHours(8))))
+        val sessionId = sessionRepository.registerSession(Session(
+                userId,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(2)
+        ))
         resp.cookie("sessionId", sessionId)
         return resp.redirect("/home")
     }
