@@ -12,25 +12,19 @@ interface SessionRepository {
     fun registerSession(session: Session): String?
 
     /**
-     * Gets session from the DB
+     * Gets session from the DB if it it not expired
      * @param sessionId the id of the session
+     * @param instant the current DateTime
      * @return Session DTO if there is a match with this id or null if there is not
      */
-    fun getSession(sessionId: String): Session?
-
-    /**
-     * Gets session id from the DB
-     * @param userId the id of the user
-     * @param createdOn when the session was created
-     * @return the session id or null if there is no match in the DB with these params
-     */
-    fun getSessionId(userId: Int, createdOn: LocalDateTime): String?
+    fun getSessionAvailableAt(sessionId: String, instant: LocalDateTime): Session?
 
     /**
      * Gets the count of all active sessions
+     * @param instant the current DateTime
      * @return the count of all active sessions
      */
-    fun getSessionsCount(): Int
+    fun getSessionsCount(instant: LocalDateTime): Int
 
     /**
      * Deletes session from the DB

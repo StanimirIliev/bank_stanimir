@@ -16,41 +16,41 @@ class JdbcSessionRepository(
     override fun registerSession(session: Session): String? {
         val id = UUID.randomUUID().toString()
         val affectedRows = jdbcTemplate
-                .execute("INSERT INTO $table(Id, UserId, CreatedOn) " +
-                        "VALUES('$id', (SELECT Id FROM $userTable WHERE Id='${session.userId}'),'${session.createdOn}')")
+                .execute("INSERT INTO $table(Id, UserId, CreatedOn, ExpiresAt) " +
+                        "VALUES('$id', (SELECT Id FROM $userTable WHERE Id='${session.userId}'),'${session.createdOn}'," +
+                        "'${session.expiresAt}')")
         return if (affectedRows == 1) id else null
     }
 
-    override fun getSession(sessionId: String): Session? {
+    override fun getSessionAvailableAt(sessionId: String, instant: LocalDateTime): Session? {
         val list = jdbcTemplate.fetch("SELECT * FROM $table WHERE Id='$sessionId'",
-                object : RowMapper<Session> {
-                    override fun fetch(rs: ResultSet): Session {
-                        return Session(rs.getInt("UserId"), rs.getTimestamp("CreatedOn").toLocalDateTime())
-                    }
-                })
-        return if (list.isEmpty()) null else list.first()
-    }
-
-    override fun getSessionsCount(): Int {
-        return jdbcTemplate.fetch("SELECT * FROM $table",
                 object : RowMapper<Session> {
                     override fun fetch(rs: ResultSet): Session {
                         return Session(
                                 rs.getInt("UserId"),
-                                rs.getTimestamp("CreatedOn").toLocalDateTime()
+                                rs.getTimestamp("CreatedOn").toLocalDateTime(),
+                                rs.getTimestamp("ExpiresAt").toLocalDateTime()
                         )
                     }
-                }).count()
+                })
+        return if (!list.isEmpty() && list.first().expiresAt.isAfter(instant))
+            list.first()
+        else
+            null
     }
 
-    override fun getSessionId(userId: Int, createdOn: LocalDateTime): String? {
-        val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE UserId=$userId AND CreatedOn='$createdOn'",
-                object : RowMapper<String> {
-                    override fun fetch(rs: ResultSet): String {
-                        return rs.getString("Id")
+    override fun getSessionsCount(instant: LocalDateTime): Int {
+        val sessions = jdbcTemplate.fetch("SELECT * FROM $table",
+                object : RowMapper<Session> {
+                    override fun fetch(rs: ResultSet): Session {
+                        return Session(
+                                rs.getInt("UserId"),
+                                rs.getTimestamp("CreatedOn").toLocalDateTime(),
+                                rs.getTimestamp("ExpiresAt").toLocalDateTime()
+                        )
                     }
                 })
-        return if (list.isEmpty()) null else list.first()
+        return sessions.filter { it.expiresAt.isAfter(instant) }.count()
     }
 
     override fun terminateSession(sessionId: String): Boolean {

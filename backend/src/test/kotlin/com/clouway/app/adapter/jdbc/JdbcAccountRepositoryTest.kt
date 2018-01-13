@@ -55,8 +55,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun makeADeposit() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
         assertThat(accountRepository.updateBalance(accountId, userId, 30f).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
@@ -64,8 +63,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun makeAValidWithdraw() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 50f))
         assertThat(accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
@@ -73,8 +71,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun tryToMakeWithdrawGreaterThanBalance() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val accountId = accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
         assertThat(accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(false)))
         assertThat(accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(0f)))
@@ -87,8 +84,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun checkIfTransactionRepositoryIsCalledOnUpdateBalance() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
 
         val mockTransactionRepository = object : TransactionRepository {
             override fun registerTransaction(transaction: Transaction): Boolean {
@@ -109,8 +105,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun tryToAddTwoAccountsForOneUserWithTheSameTitles() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         accountRepository.registerAccount(Account("Fund for something", userId, Currency.BGN, 0f))
         assertThat(accountRepository.registerAccount(
                 Account("Fund for something", userId, Currency.BGN, 0f)), `is`(equalTo(-1)))
@@ -118,8 +113,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun getAllAccountsByUserId() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val account1 = Account("Fund for something", userId, Currency.BGN, 0f)
         val account2 = Account("Fund for other something", userId, Currency.BGN, 0f)
         val accountId1 = accountRepository.registerAccount(account1)
@@ -137,8 +131,7 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun getAccountThatWasRegistered() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val account = Account("Fund for something", userId, Currency.BGN, 0f)
         val accountId = accountRepository.registerAccount(account)
         assertThat(accountRepository.getUserAccount(userId, accountId), `is`(equalTo(account.apply { id = accountId })))
@@ -151,18 +144,15 @@ class JdbcAccountRepositoryTest {
 
     @Test
     fun tryToGetRegisteredAccountOfOtherUser() {
-        userRepository.registerUser("user1", "password")
-        userRepository.registerUser("user2", "password")
-        val userId1 = getUserId("user1")
-        val userId2 = getUserId("user2")
+        val userId1 = userRepository.registerUser("user1", "password")
+        val userId2 = userRepository.registerUser("user2", "password")
         val accountId = accountRepository.registerAccount(Account("Some fund", userId1, Currency.BGN, 0f))
         assertThat(accountRepository.getUserAccount(userId2, accountId), `is`(nullValue()))
     }
 
     @Test
     fun removeAccountThatWasRegistered() {
-        userRepository.registerUser("user123", "password123")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password123")
         val accountId = accountRepository.registerAccount(Account("Fund for something", userId, Currency.BGN, 0f))
         assertThat(accountRepository.removeAccount(accountId, userId).successful, `is`(equalTo(true)))
         assertThat(accountRepository.getUserAccount(userId, accountId), `is`(nullValue()))
@@ -171,9 +161,5 @@ class JdbcAccountRepositoryTest {
     @Test
     fun tryToRemoveUnregisteredAccount() {
         assertThat(accountRepository.removeAccount(-1, -1).successful, `is`(equalTo(false)))
-    }
-
-    private fun getUserId(username: String): Int {
-        return userRepository.getUserId(username)
     }
 }

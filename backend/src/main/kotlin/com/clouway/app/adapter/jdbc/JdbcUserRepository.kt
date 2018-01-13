@@ -9,12 +9,21 @@ import java.sql.ResultSet
 
 class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val table: String) : UserRepository {
 
-    override fun registerUser(username: String, password: String): Boolean {
+    override fun registerUser(username: String, password: String): Int {
         val saltedHash = SaltedHash(30, password)
         val affectedRows = jdbcTemplate
                 .execute("INSERT INTO $table(Username, Password, Salt) VALUES('$username', '${saltedHash.hash}', " +
                         "'${saltedHash.salt}')")
-        return affectedRows == 1
+        if(affectedRows == 1) {
+            val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE Username='$username'",
+                    object : RowMapper<Int> {
+                        override fun fetch(rs: ResultSet): Int {
+                            return rs.getInt("Id")
+                        }
+                    })
+            return if(list.isEmpty()) -1 else list.first()
+        }
+        return -1
     }
 
     override fun authenticate(username: String, password: String): Boolean {
@@ -36,17 +45,6 @@ class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val tab
                             }
                         })
         return if (list.isEmpty()) false else list.first()
-    }
-
-    override fun getUserId(username: String): Int {
-        val list = jdbcTemplate
-                .fetch("SELECT Id FROM $table WHERE Username='$username'",
-                        object : RowMapper<Int> {
-                            override fun fetch(rs: ResultSet): Int {
-                                return rs.getInt("Id")
-                            }
-                        })
-        return if (list.isEmpty()) -1 else list.first()
     }
 
     override fun getUsername(id: Int): String? {
