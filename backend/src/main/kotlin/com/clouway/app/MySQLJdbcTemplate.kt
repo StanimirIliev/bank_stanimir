@@ -16,12 +16,10 @@ class MySQLJdbcTemplate(private val dataSource: DataSource) : JdbcTemplate {
             statement = connection.prepareStatement(query)
             statement.execute()
             return statement.updateCount
-        }
-        catch(e: SQLException) {
+        } catch (e: SQLException) {
             return -1
-        }
-        finally {
-            if(statement != null) {
+        } finally {
+            if (statement != null) {
                 statement.close()
             }
             connection.close()
@@ -33,18 +31,16 @@ class MySQLJdbcTemplate(private val dataSource: DataSource) : JdbcTemplate {
         var preparedStatement: PreparedStatement? = null
         try {
             preparedStatement = connection.prepareStatement(query)
-            for(i in params.indices) {
-                preparedStatement.setObject(i +1, params[i])
+            for (i in params.indices) {
+                preparedStatement.setObject(i + 1, params[i])
             }
             preparedStatement = connection.prepareStatement(query)
             preparedStatement.execute()
             return preparedStatement.updateCount
-        }
-        catch(e: SQLException) {
+        } catch (e: SQLException) {
             return -1
-        }
-        finally {
-            if(preparedStatement != null) {
+        } finally {
+            if (preparedStatement != null) {
                 preparedStatement.close()
             }
             connection.close()
@@ -57,17 +53,16 @@ class MySQLJdbcTemplate(private val dataSource: DataSource) : JdbcTemplate {
         try {
             statement = connection.prepareStatement(query)
             val result = statement.executeQuery()
-            if(!result.next()) {
+            if (!result.next()) {
                 return listOf()
             }
             val list = LinkedList<T>()
-            do{
-               list.add(mapper.fetch(result))
-            } while(result.next())
+            do {
+                list.add(mapper.fetch(result))
+            } while (result.next())
             return list
-        }
-        finally {
-            if(statement != null) {
+        } finally {
+            if (statement != null) {
                 statement.close()
             }
             connection.close()

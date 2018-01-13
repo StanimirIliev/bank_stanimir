@@ -14,14 +14,14 @@ class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val tab
         val affectedRows = jdbcTemplate
                 .execute("INSERT INTO $table(Username, Password, Salt) VALUES('$username', '${saltedHash.hash}', " +
                         "'${saltedHash.salt}')")
-        if(affectedRows == 1) {
+        if (affectedRows == 1) {
             val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE Username='$username'",
                     object : RowMapper<Int> {
                         override fun fetch(rs: ResultSet): Int {
                             return rs.getInt("Id")
                         }
                     })
-            return if(list.isEmpty()) -1 else list.first()
+            return if (list.isEmpty()) -1 else list.first()
         }
         return -1
     }
@@ -45,16 +45,5 @@ class JdbcUserRepository(private val jdbcTemplate: JdbcTemplate, private val tab
                             }
                         })
         return if (list.isEmpty()) false else list.first()
-    }
-
-    override fun getUsername(id: Int): String? {
-        val list = jdbcTemplate
-                .fetch("SELECT Username FROM $table WHERE Id=$id",
-                        object : RowMapper<String> {
-                            override fun fetch(rs: ResultSet): String {
-                                return rs.getString("Username")
-                            }
-                        })
-        return if (list.isEmpty()) null else list.first()
     }
 }
