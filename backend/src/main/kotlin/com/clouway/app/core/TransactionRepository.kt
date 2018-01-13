@@ -1,7 +1,5 @@
 package com.clouway.app.core
 
-import java.sql.Timestamp
-
 interface TransactionRepository {
 
     /**
