@@ -43,71 +43,71 @@ class JdbcSessionRepositoryTest {
 
     @Test
     fun getSessionThatWasRegistered() {
-        userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "somePassword")
         val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        val session = Session(userId, createdOn)
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 25)
+        val session = Session(userId, createdOn, expiresAt)
         val sessionId = sessionRepository.registerSession(session)
-        assertThat(sessionRepository.getSession(sessionId!!), `is`(equalTo(session)))
+        assertThat(sessionRepository.getSessionAvailableAt(sessionId!!, instant), `is`(equalTo(session)))
     }
 
     @Test
-    fun getSessionIdOfRegisteredSession() {
-        userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123")
-        val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        val sessionId = sessionRepository.registerSession(Session(userId, createdOn))!!
-        assertThat(sessionRepository.getSessionId(userId, createdOn), `is`(equalTo(sessionId)))
-    }
-
-    @Test
-    fun tryToGetSessionIdWithWrongCreationTimeParameter() {
-        userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123")
-        val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        val wrongCreationTime = LocalDateTime.of(2010, 1, 1, 0, 0)
-        sessionRepository.registerSession(Session(userId, createdOn))!!
-        assertThat(sessionRepository.getSessionId(userId, wrongCreationTime), `is`(nullValue()))
+    fun tryToGetSessionThatWasExpired() {
+        //TODO
     }
 
     @Test
     fun tryToBindSessionToUnregisteredUser() {
         val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        val session = Session(1, createdOn)
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val session = Session(1, createdOn, expiresAt)
         assertThat(sessionRepository.registerSession(session), `is`(nullValue()))
     }
 
     @Test
     fun tryToGetSessionWithWrongId() {
-        assertThat(sessionRepository.getSession("notExistingId"), `is`(nullValue()))
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 25)
+        assertThat(sessionRepository.getSessionAvailableAt("notExistingId", instant), `is`(nullValue()))
     }
 
     @Test
     fun getSessionsCount() {
-        assertThat(sessionRepository.getSessionsCount(), `is`(equalTo(0)))
-        userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123")
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 25)
+        assertThat(sessionRepository.getSessionsCount(instant), `is`(equalTo(0)))
+        val userId = userRepository.registerUser("user123", "somePassword")
         val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        sessionRepository.registerSession(Session(userId, createdOn))
-        assertThat(sessionRepository.getSessionsCount(), `is`(equalTo(1)))
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        sessionRepository.registerSession(Session(userId, createdOn, expiresAt))
+        assertThat(sessionRepository.getSessionsCount(instant), `is`(equalTo(1)))
+    }
+
+    @Test
+    fun getSessionsCountOfOnlyNotExpiredSessions() {
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 25)
+        assertThat(sessionRepository.getSessionsCount(instant), `is`(equalTo(0)))
+        val userId = userRepository.registerUser("user123", "somePassword")
+        val createdOn1 = LocalDateTime.of(2018, 1, 12, 14, 10)
+        val expiresAt1 = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val createdOn2 = LocalDateTime.of(2018, 1, 12, 14, 10)
+        val expiresAt2 = LocalDateTime.of(2018, 1, 12, 14, 15)
+        sessionRepository.registerSession(Session(userId, createdOn1, expiresAt1))
+        assertThat(sessionRepository.getSessionsCount(instant), `is`(equalTo(1)))
     }
 
     @Test
     fun terminateSessionThatWasRegistered() {
-        userRepository.registerUser("user123", "somePassword")
-        val userId = getUserId("user123")
+        val userId = userRepository.registerUser("user123", "somePassword")
         val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
-        val sessionId = sessionRepository.registerSession(Session(userId, createdOn))
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 25)
+        val sessionId = sessionRepository.registerSession(Session(userId, createdOn, expiresAt))
         assertThat(sessionRepository.terminateSession(sessionId!!), `is`(equalTo(true)))
-        assertThat(sessionRepository.getSession(sessionId), `is`(nullValue()))
+        assertThat(sessionRepository.getSessionAvailableAt(sessionId, instant), `is`(nullValue()))
     }
 
     @Test
     fun tryToTerminateSessionThatWasNotRegistered() {
         assertThat(sessionRepository.terminateSession("notExistingId"), `is`(equalTo(false)))
-    }
-
-    private fun getUserId(username: String): Int {
-        return userRepository.getUserId(username)
     }
 }

@@ -52,8 +52,7 @@ class JdbcTransactionRepositoryTest {
 
     @Test
     fun getTransactionThatWasRegistered() {
-        userRepository.registerUser("user", "password")
-        val userId = getUserId("user")
+        val userId = userRepository.registerUser("user", "password")
         val accountId = accountRepository.registerAccount(Account("Some fund", userId, Currency.BGN, 0f))
         val transactionCreatedOn = LocalDateTime.of(2018, 1, 12, 14, 10)
         val transaction = Transaction(userId, accountId, transactionCreatedOn, Operation.DEPOSIT, 5f)
@@ -70,9 +69,5 @@ class JdbcTransactionRepositoryTest {
     @Test
     fun tryToGetTransactionWithUserIdThatDoesNotExists() {
         assertThat(transactionRepository.getTransactions(1), `is`(equalTo(emptyList())))
-    }
-
-    private fun getUserId(username: String): Int {
-        return userRepository.getUserId(username)
     }
 }

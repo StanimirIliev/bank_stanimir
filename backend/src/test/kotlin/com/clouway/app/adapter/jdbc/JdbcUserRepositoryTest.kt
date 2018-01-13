@@ -38,40 +38,28 @@ class JdbcUserRepositoryTest {
     fun tryToRegisterAlreadyRegisteredUser() {
         userRepository.registerUser("user123", "password456")
         assertThat(userRepository.registerUser("user123", "password789"),
-                `is`(equalTo(false)))
+                `is`(equalTo(-1)))
     }
 
     @Test
-    fun getUserThatWasRegistered() {
+    fun authenticateUserThatWasRegistered() {
         userRepository.registerUser("user123", "password789")
         assertThat(userRepository.authenticate("user123", "password789"), `is`(equalTo(true)))
     }
 
     @Test
-    fun tryToGetUnregisteredUser() {
+    fun tryToAuthenticateUnregisteredUser() {
         assertThat(userRepository.authenticate("user123", "password456"), `is`(equalTo(false)))
     }
 
     @Test
-    fun getIdOfRegisteredUser() {
-        userRepository.registerUser("user123", "password789")
-        assertThat(userRepository.getUserId("user123"), `is`(any(Int::class.java)))
-    }
-
-    @Test
-    fun tryToGetIdOfUnregisteredUser() {
-        assertThat(userRepository.getUserId("unregisteredUsername"), `is`(equalTo(-1)))
-    }
-
-    @Test
     fun getUsernameOfRegisteredUser() {
-        userRepository.registerUser("user123", "password789")
-        val userId = userRepository.getUserId("user123")
+        val userId = userRepository.registerUser("user123", "password789")
         assertThat(userRepository.getUsername(userId), `is`(equalTo("user123")))
     }
 
     @Test
     fun tryToGetUsernameOfUnregisteredUser() {
-        assertThat(userRepository.getUsername(1), `is`(nullValue()))
+        assertThat(userRepository.getUsername(-1), `is`(nullValue()))
     }
 }
