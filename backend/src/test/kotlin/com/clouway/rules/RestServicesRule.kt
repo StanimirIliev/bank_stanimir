@@ -7,12 +7,16 @@ import com.clouway.app.adapter.jdbc.JdbcTransactionRepository
 import com.clouway.app.adapter.jdbc.JdbcUserRepository
 import com.clouway.app.core.*
 import com.mysql.cj.jdbc.MysqlDataSource
+import org.apache.http.client.CookieStore
+import org.apache.http.impl.client.BasicCookieStore
+import org.apache.http.impl.cookie.BasicClientCookie
 import org.junit.rules.ExternalResource
 import java.io.FileReader
+import java.time.LocalDateTime
 
-class DataStoreRule() : ExternalResource() {
+class RestServicesRule(private val domain: String) : ExternalResource() {
 
-    val mySqlDataSource = MysqlDataSource()
+    private val mySqlDataSource = MysqlDataSource()
 
     private val accountsTable = "Accounts"
     private val transactionsTable = "Transactions"
@@ -23,6 +27,7 @@ class DataStoreRule() : ExternalResource() {
     lateinit var userRepository: UserRepository
     lateinit var sessionRepository: SessionRepository
     lateinit var mySqlJdbcTemplate: JdbcTemplate
+    lateinit var session: Session
 
     override fun before() {
         mySqlDataSource.setUrl("jdbc:mysql://${System.getenv("DB_HOST")}/${System.getenv("DB_TABLE")}" +
@@ -37,5 +42,22 @@ class DataStoreRule() : ExternalResource() {
         val statement = mySqlDataSource.connection.createStatement()
         statement.execute(FileReader("schema/create_tables.sql").readText())
         statement.execute(FileReader("schema/clear_tables.sql").readText())
+    }
+
+    fun createSessionAndCookie(username: String, password: String): CookieStore {
+        val userId = userRepository.registerUser(username, password)
+        session = Session(
+                userId,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(2)
+        )
+        val sessionId = sessionRepository.registerSession(session!!) ?:
+                throw Exception("Unable to register the session")
+        val cookieStore = BasicCookieStore()
+        val cookie = BasicClientCookie("sessionId", sessionId)
+        cookie.domain = domain
+        cookie.path = "/"
+        cookieStore.addCookie(cookie)
+        return cookieStore
     }
 }

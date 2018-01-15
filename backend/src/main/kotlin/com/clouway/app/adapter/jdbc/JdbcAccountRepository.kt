@@ -54,7 +54,7 @@ class JdbcAccountRepository(
 
     override fun removeAccount(accountId: Int, userId: Int): OperationResponse {
         if (getUserAccount(userId, accountId) == null) {
-            return OperationResponse(false, "account-not-exist")
+            return OperationResponse(false, "account-not-found")
         }
         if (jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1) {
             return OperationResponse(true, "successful")

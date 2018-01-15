@@ -1,6 +1,5 @@
 package com.clouway.app.adapter.http.get
 
-import com.clouway.app.App
 import spark.Request
 import spark.Response
 import spark.Route

@@ -17,7 +17,7 @@ class LogoutRoute(private val sessionRepository: SessionRepository, private val 
             if (!sessionRepository.terminateSession(req.cookie("sessionId"))) {
                 resp.type("application/json")
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                "{\"message\":\"Error occurred while getting the cookie sessionId\"}"
+                "{\"message\":\"Unable to terminate your session.\"}"
             } else {
                 req.session().invalidate()
                 resp.redirect("/index")

@@ -39,7 +39,7 @@ interface AccountRepository {
      * @param accountId the id of the account
      * @return OperationResponse object
      * OperationResponse messages:
-     * account-not-exist
+     * account-not-found
      * successful
      * error
      */
