@@ -1,35 +1,14 @@
 package com.clouway.app.adapter.http.get
 
-import com.clouway.app.core.Session
 import com.clouway.app.core.SessionRepository
-import org.apache.log4j.Logger
-import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
 import java.time.LocalDateTime
 
 class ActivityRoute(
-        private val sessionRepository: SessionRepository,
-        private val logger: Logger
+        private val sessionRepository: SessionRepository
 ) : Route {
-    override fun handle(req: Request, resp: Response): Any {
-
-        resp.type("application/json")
-        var session: Session?
-        if (req.cookie("sessionId") == null) {
-            resp.status(HttpStatus.BAD_REQUEST_400)
-            logger.error("Error occurred while getting the cookie sessionId")
-            return "{\"message\":\"Error occurred while getting the cookie sessionId\"}"
-        } else {
-            session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId"), LocalDateTime.now())
-            if (session == null) {
-                resp.status(HttpStatus.BAD_REQUEST_400)
-                logger.error("Invalid sessionId")
-                return "{\"message\":\"Invalid sessionId\"}"
-            }
-        }
-
-        return "{\"activity\":${sessionRepository.getSessionsCount(LocalDateTime.now())}}"
-    }
+    override fun handle(req: Request, resp: Response): Any =
+            "{\"activity\":${sessionRepository.getSessionsCount(LocalDateTime.now())}}"
 }
