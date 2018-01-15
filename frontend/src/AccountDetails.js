@@ -17,11 +17,11 @@ class AccountDetails extends Component {
 
     componentWillMount() {
         this.setState({ loading: true })
-        axios.get('/v1/account', { params: { id: this.state.id } })
+        axios.get(`/v1/accounts/${this.state.id}`)
             .then(resp => {
                 this.setState({ loading: false, account: resp.data.account })
             })
-            .catch(error => this.setState({ loading: false, error: error.data.msg }))
+            .catch(error => this.setState({ loading: false, error: error.data.message }))
     }
 
     render() {
@@ -46,8 +46,8 @@ class AccountDetails extends Component {
                         <b>Balance:</b> {balance}
                     </div>
                     <div className="selected_account__buttons">
-                        <Link className="linkButton selected_account__button" to={`/deposit/${id}`}>Deposit</Link>
-                        <Link className="linkButton selected_account__button" to={`/withdraw/${id}`}>Withdraw</Link>
+                        <Link className="linkButton selected_account__button" to={`/accounts/${id}/deposit`}>Deposit</Link>
+                        <Link className="linkButton selected_account__button" to={`/accounts/${id}/withdraw`}>Withdraw</Link>
                     </div>
                 </div>
                 <Link className="linkButton button--close" to="/accounts">Back</Link>

@@ -20,7 +20,7 @@ class AccountDetails extends Component {
 
     componentWillMount() {
         this.setState({ loading: true })
-        axios.get('/v1/account', { params: { id: this.state.id } })
+        axios.get(`/v1/accounts/${this.state.id}`)
             .then(resp => {
                 this.setState({ loading: false, account: resp.data.account })
             })
@@ -29,22 +29,18 @@ class AccountDetails extends Component {
 
     deleteAccount() {
         this.setState({ loading: true })
-        axios.delete('/v1/removeAccount', {
-            params: {
-                id: this.state.id
-            }
-        })
+        axios.delete(`/v1/accounts/${this.state.id}`)
             .then(response => this.setState({
                 loading: false,
                 msg: {
-                    content: response.data.msg,
+                    content: response.data.message,
                     messageClass: 'message--positive'
                 }
             }))
             .catch(error => this.setState({
                 loading: false,
                 msg: {
-                    content: error.response.data.msg,
+                    content: error.response.data.message,
                     messageClass: 'message--negative'
                 }
             }))
@@ -57,7 +53,7 @@ class AccountDetails extends Component {
         }
 
         if (msg != null) {
-            return (<Message returnPath="/removeAccounts"
+            return (<Message returnPath="/delete"
                 content={msg.content}
                 messageClass={msg.messageClass} />)
         }
@@ -79,10 +75,10 @@ class AccountDetails extends Component {
                         <button className="button remove_account__buttons" onClick={() => {
                             this.deleteAccount()
                         }}>Yes</button>
-                        <Link className="linkButton remove_account__buttons" to='/removeAccounts'>No</Link>
+                        <Link className="linkButton remove_account__buttons" to='/delete'>No</Link>
                     </div>
                 </div>
-                <Link className="linkButton button--close" to="/removeAccounts">Back</Link>
+                <Link className="linkButton button--close" to="/delete">Back</Link>
             </div>
         )
     }

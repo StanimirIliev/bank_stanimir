@@ -42,17 +42,17 @@ class ShowAccounts extends Component {
         for (let i = 0; i < accounts.length; i++) {
             if (i === accounts.length - 1) {
                 accountsRendered.push(
-                    <Link className="container__accounts__item" to={`/account/${accounts[i].id}`}>
+                    <Link key={i} className="container__accounts__item" to={`/accounts/${accounts[i].id}`}>
                         <hr className="splitter__accounts" />
                         <Account title={accounts[i].title}
                             balance={accounts[i].balance}
                             currency={accounts[i].currency} />
                         <hr className="splitter__accounts" />
                     </Link>)
-            }
+            }   
             else {
                 accountsRendered.push(
-                    <Link className="container__accounts__item" to={`/account/${accounts[i].id}`}>
+                    <Link key={i} className="container__accounts__item" to={`/accounts/${accounts[i].id}`}>
                         <hr className="splitter__accounts" />
                         <Account title={accounts[i].title}
                             balance={accounts[i].balance}

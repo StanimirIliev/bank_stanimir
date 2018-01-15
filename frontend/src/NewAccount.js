@@ -10,7 +10,7 @@ class NewAccount extends Component {
         super()
         this.state = {
             currency: "BGN",
-            title: null,
+            title: null, 
             loading: false,
             message: null
         }
@@ -20,7 +20,7 @@ class NewAccount extends Component {
 
     createNewAccount() {
         this.setState({ loading: true })
-        axios.post('/v1/newAccount', {
+        axios.post('/v1/accounts', {
             params: {
                 title: this.state.title,
                 currency: this.state.currency
@@ -29,14 +29,14 @@ class NewAccount extends Component {
             .then(resp => this.setState({
                 loading: false,
                 message: {
-                    content: resp.data.msg,
+                    content: resp.data.message,
                     messageClass: 'message--positive'
                 }
             }))
             .catch(error => this.setState({
                 loading: false,
                 message: {
-                    content: error.response.data.msg,
+                    content: error.response.data.message,
                     messageClass: 'message--negative'
                 }
             }))

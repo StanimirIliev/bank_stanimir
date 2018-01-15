@@ -25,7 +25,7 @@ class RemoveAccountsMenu extends Component {
 
     render() {
         const { loading, accounts } = this.state
-
+        
         if (loading) {
             return (<Loading />)
         }
@@ -41,7 +41,7 @@ class RemoveAccountsMenu extends Component {
         for (let i = 0; i < accounts.length; i++) {
             if (i === accounts.length - 1) {
                 accountsRendered.push(
-                    <Link className="container__accounts__item" to={`/removeAccount/${accounts[i].id}`}>
+                    <Link className="container__accounts__item" to={`/accounts/${accounts[i].id}/delete`}>
                         <hr className="splitter__accounts" />
                         <Account title={accounts[i].title}
                             balance={accounts[i].balance}
@@ -51,7 +51,7 @@ class RemoveAccountsMenu extends Component {
             }
             else {
                 accountsRendered.push(
-                    <Link className="container__accounts__item" to={`/removeAccount/${accounts[i].id}`}>
+                    <Link className="container__accounts__item" to={`/accounts/${accounts[i].id}/delete`}>
                         <hr className="splitter__accounts" />
                         <Account title={accounts[i].title}
                             balance={accounts[i].balance}

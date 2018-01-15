@@ -20,11 +20,7 @@ class Deposit extends Component {
 
     componentWillMount() {
         this.setState({ loading: true })
-        axios.get('/v1/account', {
-            params: {
-                id: this.state.id
-            }
-        })
+        axios.get(`/v1/accounts/${this.state.id}`)
             .then(resp => this.setState({
                 account: resp.data.account,
                 loading: false
@@ -37,22 +33,21 @@ class Deposit extends Component {
 
     executeDeposit() {
         this.setState({ loading: true })
-        axios.post('/v1/executeDeposit', {
+        axios.post(`/v1/accounts/${this.state.id}/deposit`, {
             params: {
-                id: parseInt(this.state.id),
                 value: parseFloat(this.state.depositValue)
             }
         })
             .then(resp => this.setState({
                 msg: {
-                    content: resp.data.msg,
+                    content: resp.data.message,
                     messageClass: 'message--positive'
                 },
                 loading: false
             }))
             .catch(error => this.setState({
                 msg: {
-                    content: error.response.data.msg,
+                    content: error.response.data.message,
                     messageClass: 'message--negative'
                 },
                 loading: false
@@ -72,7 +67,7 @@ class Deposit extends Component {
         if (msg != null) {
             return (<Msg content={msg.content}
                 messageClass={msg.messageClass}
-                returnPath={`/account/${id}`} />)
+                returnPath={`/accounts/${id}`} />)
         }
         return (
             <div className="container__accounts">
@@ -94,7 +89,7 @@ class Deposit extends Component {
                     </div>
                 </div>
                 <button className="button button--execute" onClick={() => { this.executeDeposit() }}>Execute</button>
-                <Link className="linkButton button--close" to={`/account/${id}`}>Back</Link>
+                <Link className="linkButton button--close" to={`/accounts/${id}`}>Back</Link>
             </div>
         )
     }
