@@ -12,8 +12,8 @@ const mock = new MockAdapter(axios)
 if (process.env.NODE_ENV === 'development') {
     console.log('Development mode')
     mock
-        .onGet('/v1/activeUsers').reply(200, {
-            activeUsers: 17
+        .onGet('/v1/activity').reply(200, {
+            activity: 17
         })
         .onGet('/v1/username').reply(200, {
             username: "user"
@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
                 }
             ]
         })
-        .onGet('/v1/account', { params: { id: 100 } }).reply(200,
+        .onGet('/v1/accounts/100').reply(200,
         {
             account: {
                 title: "Fund for something",
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        .onGet('/v1/account', { params: { id: 101 } }).reply(200,
+        .onGet('/v1/accounts/101').reply(200,
         {
             account: {
                 title: "Fund for other thing",
@@ -52,70 +52,62 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        .onPost('/v1/executeDeposit', {
+        .onPost('/v1/accounts/100/deposit', {
             params: {
-                id: 100,
                 value: 100
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
-        .onPost('/v1/executeDeposit', {
+        .onPost('/v1/accounts/100/deposit', {
             params: {
-                id: 101,
                 value: 100
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
-        .onPost('/v1/executeDeposit').reply(400,
+        .onPost('/v1/accounts/100/deposit').reply(400,
         {
-            msg: "Operation unsuccessful"
+            message: "Operation unsuccessful"
         })
-        .onPost('/v1/executeWithdraw', {
+        .onPost('/v1/withdraw/100', {
             params: {
-                id: 100,
                 value: 100
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
-        .onPost('/v1/executeWithdraw', {
+        .onPost('/v1/accounts/101/withdraw', {
             params: {
-                id: 101,
                 value: 100
             }
         }).reply(200,
         {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
-        .onPost('/v1/executeWithdraw').reply(400,
+        .onPost('/v1/accounts/101/withdraw').reply(400,
         {
-            msg: "Operation unsuccessful"
+            message: "Operation unsuccessful"
         })
-        .onPost('/v1/newAccount', {
+        .onPost('/v1/accounts', {
             params: {
                 title: 'acc',
                 currency: 'bgn'
             }
         }).reply(200, {
-            msg: "Operation successful"
+            message: "Operation successful"
         })
-        .onPost('/v1/newAccount').reply(400, {
-            msg: "You already have account with such a title"
+        .onPost('/v1/accounts').reply(400, {
+            message: "You already have account with such a title"
         })
-        .onDelete('/v1/removeAccount', {
-            params: {
-                id: 100
-            }
-        }).reply(200, {
-            msg: "Operation successful"
+        .onDelete('/v1/accounts/100').reply(200, {
+            message: "Operation successful"
         })
-        .onDelete('/v1/removeAccount').reply(400, {
-            msg: "Error with the server"
+        .onDelete('/v1/accounts/*').reply(400, {
+            message: "Error with the server"
         })
 }
 else {
@@ -132,8 +124,8 @@ export default class App extends Component {
     }
 
     updateActivity = () => {
-        axios.get('/v1/activeUsers')
-            .then(response => this.setState({ activeUsers: response.data.activeUsers }))
+        axios.get('/v1/activity')
+            .then(response => this.setState({ activeUsers: response.data.activity }))
             .catch(error => console.log(error))
     }
 

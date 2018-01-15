@@ -11,13 +11,13 @@ const AccountsMenu = () => (
                     Show my accounts
                 </div>
             </Link>
-            <Link to="/newAccount" className="container__options__item">
+            <Link to="/new" className="container__options__item">
                 <img className="icon" src={require("./icons/add.png")} />
                 <div className="item__text">
                     Add new account
                 </div>
             </Link>
-            <Link to="/removeAccounts" className="container__options__item">
+            <Link to="/delete" className="container__options__item">
                 <img className="icon" src={require("./icons/remove.png")} />
                 <div className="item__text">
                     Delete account
