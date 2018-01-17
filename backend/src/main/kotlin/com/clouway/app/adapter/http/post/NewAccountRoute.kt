@@ -1,24 +1,17 @@
 package com.clouway.app.adapter.http.post
 
-import com.clouway.app.core.Account
-import com.clouway.app.core.AccountRepository
-import com.clouway.app.core.Currency
-import com.clouway.app.core.Session
+import com.clouway.app.core.*
 import com.google.gson.Gson
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
-import spark.Route
 
-class NewAccountRoute(
-        private val accountRepository: AccountRepository,
-        var session: Session
-) : Route {
+class NewAccountRoute(private val accountRepository: AccountRepository) : SecuredRoute {
 
     data class Params(val title: String?, val currency: Currency?)
     data class Wrapper(val params: Params)
 
-    override fun handle(req: Request, resp: Response): Any {
+    override fun handle(req: Request, resp: Response, session: Session): Any {
         val data = Gson().fromJson(req.body(), Wrapper::class.java)
         val title = data.params.title
         val currency = data.params.currency

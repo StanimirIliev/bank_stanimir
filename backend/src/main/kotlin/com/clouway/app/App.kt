@@ -1,5 +1,6 @@
 package com.clouway.app
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.delete.RemoveAccountRoute
 import com.clouway.app.adapter.http.get.*
 import com.clouway.app.adapter.http.post.*
@@ -7,7 +8,6 @@ import com.clouway.app.adapter.jdbc.JdbcAccountRepository
 import com.clouway.app.adapter.jdbc.JdbcSessionRepository
 import com.clouway.app.adapter.jdbc.JdbcTransactionRepository
 import com.clouway.app.adapter.jdbc.JdbcUserRepository
-import com.clouway.app.core.Session
 import com.mysql.cj.jdbc.MysqlDataSource
 import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
@@ -15,7 +15,6 @@ import org.apache.log4j.Logger
 import spark.Spark.*
 import java.io.File
 import java.io.FileReader
-import java.time.LocalDateTime
 
 
 fun main(args: Array<String>) {
@@ -56,14 +55,6 @@ fun main(args: Array<String>) {
             ))
 
     val logger = Logger.getLogger("App")
-    var session = Session(-1, LocalDateTime.MIN, LocalDateTime.MAX)
-    val accountsListRoute = AccountsListRoute(accountRepository, session)
-    val accountDetailsRoute = AccountDetailsRoute(accountRepository, session)
-    val newAccountRoute = NewAccountRoute(accountRepository, session)
-    val depositRoute = DepositRoute(accountRepository, session)
-    val withdrawRoute = WithdrawRoute(accountRepository, session)
-    val removeAccountRoute = RemoveAccountRoute(accountRepository, session, logger)
-    val usersRoute = UsersRoute(userRepository, session)
 
     initExceptionHandler { e -> logger.fatal("Unable to start the server", e) }
     internalServerError { _, res ->
@@ -84,33 +75,16 @@ fun main(args: Array<String>) {
     get("/home", HomePageRoute())
     get("/logout", LogoutRoute(sessionRepository, logger))
     path("/v1") {
-        before("/*") { req, resp ->
-            try {
-                session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId")!!, LocalDateTime.now())!!
-                accountsListRoute.session = session
-                accountDetailsRoute.session = session
-                newAccountRoute.session = session
-                depositRoute.session = session
-                withdrawRoute.session = session
-                removeAccountRoute.session = session
-                usersRoute.session = session
-            } catch (e: NullPointerException) {
-                logger.error("Invalid session")
-                halt("{\"message\":\"Invalid session.\"}")
-            } finally {
-                resp.type("application/json")
-            }
-        }
         path("/accounts") {
-            get("", accountsListRoute)
-            get("/:id", accountDetailsRoute)
-            post("", newAccountRoute)
-            post("/:id/deposit", depositRoute)
-            post("/:id/withdraw", withdrawRoute)
-            delete("/:id", removeAccountRoute)
+            get("", SecuredRouteImpl(sessionRepository, AccountsListRoute(accountRepository), logger))
+            get("/:id", SecuredRouteImpl(sessionRepository, AccountDetailsRoute(accountRepository), logger))
+            post("", SecuredRouteImpl(sessionRepository, NewAccountRoute(accountRepository), logger))
+            post("/:id/deposit", SecuredRouteImpl(sessionRepository, DepositRoute(accountRepository), logger))
+            post("/:id/withdraw", SecuredRouteImpl(sessionRepository, WithdrawRoute(accountRepository), logger))
+            delete("/:id", SecuredRouteImpl(sessionRepository, RemoveAccountRoute(accountRepository, logger), logger))
         }
         get("/activity", ActivityRoute(sessionRepository))
-        get("/username", usersRoute)
+        get("/username", SecuredRouteImpl(sessionRepository, UsersRoute(userRepository), logger))
     }
     get("/*") { _, res -> res.redirect("/home") }
 

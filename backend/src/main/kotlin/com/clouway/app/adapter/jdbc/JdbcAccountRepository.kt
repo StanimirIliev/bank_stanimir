@@ -3,6 +3,8 @@ package com.clouway.app.adapter.jdbc
 import com.clouway.app.core.*
 import java.sql.ResultSet
 import java.time.LocalDateTime
+import com.clouway.app.core.ErrorType.*
+import com.clouway.app.core.Operation.*
 
 class JdbcAccountRepository(
         private val jdbcTemplate: JdbcTemplate,
@@ -25,20 +27,20 @@ class JdbcAccountRepository(
 
     override fun updateBalance(accountId: Int, userId: Int, amount: Float): OperationResponse {
         val balance = getBalance(accountId) ?:
-                return OperationResponse(false, "incorrect-id")
+                return OperationResponse(false, INCORRECT_ID)
         if (amount + balance < 0) {
-            return OperationResponse(false, "low-balance")
+            return OperationResponse(false, LOW_BALANCE)
         }
         if (amount == 0f) {
-            return OperationResponse(false, "invalid-request")
+            return OperationResponse(false, INVALID_REQUEST)
         }
         if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId " +
                 "AND UserId=$userId") == 1 &&
                 transactionRepository.registerTransaction(Transaction(userId, accountId, LocalDateTime.now(),
-                        if (amount < 0) Operation.WITHDRAW else Operation.DEPOSIT, amount))) {
-            return OperationResponse(true, "successful")
+                        if (amount < 0) WITHDRAW else DEPOSIT, amount))) {
+            return OperationResponse(true, null)
         }
-        return OperationResponse(false, "access-denied")
+        return OperationResponse(false, ACCESS_DENIED)
     }
 
     override fun getAllAccounts(userId: Int): List<Account> {
@@ -54,12 +56,12 @@ class JdbcAccountRepository(
 
     override fun removeAccount(accountId: Int, userId: Int): OperationResponse {
         if (getUserAccount(userId, accountId) == null) {
-            return OperationResponse(false, "account-not-found")
+            return OperationResponse(false, ACCOUNT_NOT_FOUND)
         }
         if (jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1) {
-            return OperationResponse(true, "successful")
+            return OperationResponse(true, null)
         }
-        return OperationResponse(false, "error")
+        return OperationResponse(false, INTERNAL_ERROR)
     }
 
     override fun getUserAccount(userId: Int, accountId: Int): Account? {

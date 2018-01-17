@@ -1,5 +1,6 @@
 package com.clouway.app.restservices.get
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.get.AccountsListRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
@@ -34,9 +35,10 @@ class AccountsQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        get("/v1/accounts", AccountsListRoute(
-                restServicesRule.accountRepository,
-                restServicesRule.session
+        get("/v1/accounts", SecuredRouteImpl(
+                restServicesRule.sessionRepository,
+                AccountsListRoute(restServicesRule.accountRepository),
+                restServicesRule.logger
         ))
         awaitInitialization()
     }

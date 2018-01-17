@@ -1,5 +1,6 @@
 package com.clouway.app.restservices.post
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.post.DepositRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
@@ -33,9 +34,10 @@ class DepositQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        post("/v1/:id/deposit", DepositRoute(
-                restServicesRule.accountRepository,
-                restServicesRule.session
+        post("/v1/:id/deposit", SecuredRouteImpl(
+                restServicesRule.sessionRepository,
+                DepositRoute(restServicesRule.accountRepository),
+                restServicesRule.logger
         ))
         awaitInitialization()
     }

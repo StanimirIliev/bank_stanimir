@@ -1,19 +1,19 @@
 package com.clouway.app.adapter.http.delete
 
 import com.clouway.app.core.AccountRepository
+import com.clouway.app.core.SecuredRoute
 import com.clouway.app.core.Session
 import org.apache.log4j.Logger
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
-import spark.Route
+import com.clouway.app.core.ErrorType.*
 
 class RemoveAccountRoute(
         private val accountRepository: AccountRepository,
-        var session: Session,
         private val logger: Logger
-) : Route {
-    override fun handle(req: Request, resp: Response): Any {
+) : SecuredRoute {
+    override fun handle(req: Request, resp: Response, session: Session): Any {
         val accountId = req.params("id")
         if (accountId == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
@@ -22,11 +22,11 @@ class RemoveAccountRoute(
         } else {
             val operationResponse = accountRepository.removeAccount(accountId.toInt(), session.userId)
 
-            if (operationResponse.successful) {
+            if (operationResponse.isSuccessful) {
                 resp.status(HttpStatus.OK_200)
                 return "{\"message\":\"${"This account has been removed successfully."}\"}"
             }
-            if (operationResponse.message == "account-not-found") {
+            if (operationResponse.error == ACCOUNT_NOT_FOUND) {
                 resp.status(HttpStatus.NOT_FOUND_404)
                 return "{\"message\":\"Account not found.\"}"
             }

@@ -1,5 +1,6 @@
 package com.clouway.app.restservices.get
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.get.UsersRoute
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
@@ -32,9 +33,10 @@ class UsernameQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        get("/v1/username", UsersRoute(
-                restServicesRule.userRepository,
-                restServicesRule.session
+        get("/v1/username", SecuredRouteImpl(
+                restServicesRule.sessionRepository,
+                UsersRoute(restServicesRule.userRepository),
+                restServicesRule.logger
         ))
         awaitInitialization()
     }

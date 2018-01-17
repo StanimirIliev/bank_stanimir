@@ -30,7 +30,7 @@ class JdbcAccountRepositoryTest {
     fun makeADeposit() {
         val userId = dataStoreRule.userRepository.registerUser("user123", "password123")
         val accountId = dataStoreRule.accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
-        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, 30f).successful, `is`(equalTo(true)))
+        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, 30f).isSuccessful, `is`(equalTo(true)))
         assertThat(dataStoreRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
     }
 
@@ -38,7 +38,7 @@ class JdbcAccountRepositoryTest {
     fun makeAValidWithdraw() {
         val userId = dataStoreRule.userRepository.registerUser("user123", "password123")
         val accountId = dataStoreRule.accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 50f))
-        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(true)))
+        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, -20f).isSuccessful, `is`(equalTo(true)))
         assertThat(dataStoreRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(30f)))
     }
 
@@ -46,13 +46,13 @@ class JdbcAccountRepositoryTest {
     fun tryToMakeWithdrawGreaterThanBalance() {
         val userId = dataStoreRule.userRepository.registerUser("user123", "password123")
         val accountId = dataStoreRule.accountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
-        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, -20f).successful, `is`(equalTo(false)))
+        assertThat(dataStoreRule.accountRepository.updateBalance(accountId, userId, -20f).isSuccessful, `is`(equalTo(false)))
         assertThat(dataStoreRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(0f)))
     }
 
     @Test
     fun tryToMakeTransactionWithUnregisteredAccountId() {
-        assertThat(dataStoreRule.accountRepository.updateBalance(-1, -1, 20f).successful, `is`(equalTo(false)))
+        assertThat(dataStoreRule.accountRepository.updateBalance(-1, -1, 20f).isSuccessful, `is`(equalTo(false)))
     }
 
     @Test
@@ -126,12 +126,12 @@ class JdbcAccountRepositoryTest {
     fun removeAccountThatWasRegistered() {
         val userId = dataStoreRule.userRepository.registerUser("user123", "password123")
         val accountId = dataStoreRule.accountRepository.registerAccount(Account("Fund for something", userId, Currency.BGN, 0f))
-        assertThat(dataStoreRule.accountRepository.removeAccount(accountId, userId).successful, `is`(equalTo(true)))
+        assertThat(dataStoreRule.accountRepository.removeAccount(accountId, userId).isSuccessful, `is`(equalTo(true)))
         assertThat(dataStoreRule.accountRepository.getUserAccount(userId, accountId), `is`(nullValue()))
     }
 
     @Test
     fun tryToRemoveUnregisteredAccount() {
-        assertThat(dataStoreRule.accountRepository.removeAccount(-1, -1).successful, `is`(equalTo(false)))
+        assertThat(dataStoreRule.accountRepository.removeAccount(-1, -1).isSuccessful, `is`(equalTo(false)))
     }
 }

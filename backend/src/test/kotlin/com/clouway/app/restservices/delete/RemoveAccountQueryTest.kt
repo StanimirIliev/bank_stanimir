@@ -1,5 +1,6 @@
 package com.clouway.app.restservices.delete
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.delete.RemoveAccountRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
@@ -7,7 +8,6 @@ import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpDelete
 import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.log4j.Logger
 import org.eclipse.jetty.http.HttpStatus
 import org.hamcrest.CoreMatchers.*
 import org.junit.After
@@ -33,10 +33,10 @@ class RemoveAccountQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        delete("/v1/accounts/:id", RemoveAccountRoute(
-                restServicesRule.accountRepository,
-                restServicesRule.session,
-                Logger.getLogger("RemoveAccountQueryTest")
+        delete("/v1/accounts/:id", SecuredRouteImpl(
+                restServicesRule.sessionRepository,
+                RemoveAccountRoute(restServicesRule.accountRepository, restServicesRule.logger),
+                restServicesRule.logger
         ))
         awaitInitialization()
     }
