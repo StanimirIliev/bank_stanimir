@@ -1,18 +1,15 @@
 package com.clouway.app.adapter.http.get
 
 import com.clouway.app.core.AccountRepository
+import com.clouway.app.core.SecuredRoute
 import com.clouway.app.core.Session
 import com.google.gson.Gson
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
-import spark.Route
 
-class AccountDetailsRoute(
-        private val accountRepository: AccountRepository,
-        var session: Session
-) : Route {
-    override fun handle(req: Request, resp: Response): Any {
+class AccountDetailsRoute(private val accountRepository: AccountRepository) : SecuredRoute {
+    override fun handle(req: Request, resp: Response, session: Session): Any {
         val accountId = req.params("id")
         if (accountId == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)

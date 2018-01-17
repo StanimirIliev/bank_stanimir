@@ -10,6 +10,7 @@ import com.mysql.cj.jdbc.MysqlDataSource
 import org.apache.http.client.CookieStore
 import org.apache.http.impl.client.BasicCookieStore
 import org.apache.http.impl.cookie.BasicClientCookie
+import org.apache.log4j.Logger
 import org.junit.rules.ExternalResource
 import java.io.FileReader
 import java.time.LocalDateTime
@@ -28,6 +29,7 @@ class RestServicesRule(private val domain: String) : ExternalResource() {
     lateinit var sessionRepository: SessionRepository
     lateinit var mySqlJdbcTemplate: JdbcTemplate
     lateinit var session: Session
+    val logger = Logger.getLogger("RestServiceRule")
 
     override fun before() {
         mySqlDataSource.setUrl("jdbc:mysql://${System.getenv("DB_HOST")}/${System.getenv("DB_TABLE")}" +

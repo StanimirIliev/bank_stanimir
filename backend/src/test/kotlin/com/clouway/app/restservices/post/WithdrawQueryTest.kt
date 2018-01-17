@@ -1,5 +1,6 @@
 package com.clouway.app.restservices.post
 
+import com.clouway.app.adapter.http.SecuredRouteImpl
 import com.clouway.app.adapter.http.post.WithdrawRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
@@ -33,9 +34,10 @@ class WithdrawQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        post("/v1/:id/withdraw", WithdrawRoute(
-                restServicesRule.accountRepository,
-                restServicesRule.session
+        post("/v1/:id/withdraw", SecuredRouteImpl(
+                restServicesRule.sessionRepository,
+                WithdrawRoute(restServicesRule.accountRepository),
+                restServicesRule.logger
         ))
         awaitInitialization()
     }
@@ -56,7 +58,7 @@ class WithdrawQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.CREATED_201)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"Withdraw successful.\"}")))
+        assertThat(responseContent, `is`(equalTo("{\"message\":\"Withdraw isSuccessful.\"}")))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(20f)))
     }
 
