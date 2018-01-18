@@ -8,22 +8,18 @@ import java.sql.ResultSet
 import java.time.LocalDateTime
 import java.util.*
 
-class JdbcSessionRepository(
-        private val jdbcTemplate: JdbcTemplate,
-        private val table: String,
-        private val userTable: String
-) : SessionRepository {
+class JdbcSessionRepository(private val jdbcTemplate: JdbcTemplate) : SessionRepository {
     override fun registerSession(session: Session): String? {
         val id = UUID.randomUUID().toString()
         val affectedRows = jdbcTemplate
-                .execute("INSERT INTO $table(Id, UserId, CreatedOn, ExpiresAt) " +
-                        "VALUES('$id', (SELECT Id FROM $userTable WHERE Id='${session.userId}'),'${session.createdOn}'," +
+                .execute("INSERT INTO Sessions(Id, UserId, CreatedOn, ExpiresAt) " +
+                        "VALUES('$id', (SELECT Id FROM Users WHERE Id='${session.userId}'),'${session.createdOn}'," +
                         "'${session.expiresAt}')")
         return if (affectedRows == 1) id else null
     }
 
     override fun getSessionAvailableAt(sessionId: String, instant: LocalDateTime): Session? {
-        val list = jdbcTemplate.fetch("SELECT * FROM $table WHERE Id='$sessionId'",
+        val list = jdbcTemplate.fetch("SELECT * FROM Sessions WHERE Id='$sessionId'",
                 object : RowMapper<Session> {
                     override fun fetch(rs: ResultSet): Session {
                         return Session(
@@ -40,7 +36,7 @@ class JdbcSessionRepository(
     }
 
     override fun getSessionsCount(instant: LocalDateTime): Int {
-        val sessions = jdbcTemplate.fetch("SELECT * FROM $table",
+        val sessions = jdbcTemplate.fetch("SELECT * FROM Sessions",
                 object : RowMapper<Session> {
                     override fun fetch(rs: ResultSet): Session {
                         return Session(
@@ -55,7 +51,7 @@ class JdbcSessionRepository(
 
     override fun terminateSession(sessionId: String): Boolean {
         val affectedRows = jdbcTemplate
-                .execute("DELETE FROM $table WHERE Id='$sessionId'")
+                .execute("DELETE FROM Sessions WHERE Id='$sessionId'")
         return affectedRows == 1
     }
 }

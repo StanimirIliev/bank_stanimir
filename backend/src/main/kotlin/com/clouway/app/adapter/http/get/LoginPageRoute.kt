@@ -7,7 +7,7 @@ import spark.Response
 import spark.Route
 import java.io.StringWriter
 
-class LoginPageRouteGet(private val config: Configuration) : Route {
+class LoginPageRoute(private val config: Configuration) : Route {
     override fun handle(request: Request, response: Response): Any {
         val template = config.getTemplate("login.ftlh")
         response.type("text/html")

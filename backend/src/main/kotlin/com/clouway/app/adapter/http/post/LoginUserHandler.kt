@@ -11,8 +11,8 @@ import spark.Route
 import java.io.StringWriter
 import java.time.LocalDateTime
 
-class LoginPageRoutePost(private val userRepository: UserRepository, private val sessionRepository: SessionRepository,
-                         private val config: Configuration) : Route {
+class LoginUserHandler(private val userRepository: UserRepository, private val sessionRepository: SessionRepository,
+                       private val config: Configuration) : Route {
     override fun handle(req: Request, resp: Response): Any {
         val template = config.getTemplate("login.ftlh")
         resp.type("text/html")
@@ -22,9 +22,6 @@ class LoginPageRoutePost(private val userRepository: UserRepository, private val
             return out.toString()
         }
         val userId = userRepository.getUserId(req.queryParams("username"))
-        val session = req.session(true)
-        session.maxInactiveInterval(2 * 60 * 60)// two hours
-        session.attribute("userId", userId)
         val sessionId = sessionRepository.registerSession(Session(
                 userId,
                 LocalDateTime.now(),

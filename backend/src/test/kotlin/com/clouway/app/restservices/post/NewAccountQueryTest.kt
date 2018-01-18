@@ -1,9 +1,10 @@
 package com.clouway.app.restservices.post
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.post.NewAccountRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
+import com.clouway.app.core.httpresponse.HttpResponseMessage
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
@@ -22,6 +23,9 @@ import java.nio.charset.Charset
 
 class NewAccountQueryTest {
 
+    data class Params(val params: TittleAndCurrency)
+    data class TittleAndCurrency(val title: String, val currency: Currency?)
+
     private val port = 8080
     private val domain = "127.0.0.1"
     private val url = "http://$domain:$port/v1/accounts"
@@ -35,11 +39,11 @@ class NewAccountQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        post("/v1/accounts", SecuredRouteImpl(
+        post("/v1/accounts", Secured(
                 restServicesRule.sessionRepository,
                 NewAccountRoute(restServicesRule.accountRepository),
                 restServicesRule.logger
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -51,12 +55,14 @@ class NewAccountQueryTest {
     @Test
     fun addNewAccount() {
         val request = HttpPost(url)
-        val params = StringEntity("{\"params\":{\"title\":\"SomeFund\",\"currency\":\"BGN\"}}")
+        val params = StringEntity(restServicesRule.gson.toJson(Params(TittleAndCurrency("Some fund", Currency.BGN))))
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.CREATED_201)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"New account opened successful.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("New account opened successful.")
+        ))))
     }
 
     @Test
@@ -64,23 +70,26 @@ class NewAccountQueryTest {
         val userId = restServicesRule.session.userId
         restServicesRule.accountRepository.registerAccount(Account("SomeFund", userId, Currency.BGN, 0f))
         val request = HttpPost(url)
-        val params = StringEntity("{\"params\":{\"title\":\"SomeFund\",\"currency\":\"BGN\"}}")
+        val params = StringEntity(restServicesRule.gson.toJson(Params(TittleAndCurrency("SomeFund", Currency.BGN))))
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"You have already account with such a title.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("You have already account with such a title.")
+        ))))
     }
 
     @Test
     fun tryToAddAccountWithoutPassingAnParameter() {
         val request = HttpPost(url)
-        val params = StringEntity("{\"params\":{\"title\":\"SomeFund\"}}")
+        val params = StringEntity(restServicesRule.gson.toJson(Params(TittleAndCurrency("Some fund", null))))
         request.entity = params
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"Cannot open new account. No title or currency " +
-                "passed with the request\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("Cannot open new account. No title or currency passed with the request.")
+        ))))
     }
 }

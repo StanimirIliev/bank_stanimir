@@ -1,7 +1,8 @@
 package com.clouway.app.restservices.get
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.UsersRoute
+import com.clouway.app.core.httpresponse.HttpResponseUsername
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
@@ -33,11 +34,11 @@ class UsernameQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        get("/v1/username", SecuredRouteImpl(
+        get("/v1/username", Secured(
                 restServicesRule.sessionRepository,
                 UsersRoute(restServicesRule.userRepository),
                 restServicesRule.logger
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -53,6 +54,6 @@ class UsernameQueryTest {
         val response = client.execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"username\":\"user123\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(HttpResponseUsername("user123")))))
     }
 }

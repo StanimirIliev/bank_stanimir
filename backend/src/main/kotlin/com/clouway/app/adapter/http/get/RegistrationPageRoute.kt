@@ -7,7 +7,7 @@ import spark.Response
 import spark.Route
 import java.io.StringWriter
 
-class RegistrationPageRouteGet(private val config: Configuration) : Route {
+class RegistrationPageRoute(private val config: Configuration) : Route {
     override fun handle(req: Request, resp: Response): Any {
         val template = config.getTemplate("registration.ftlh")
         resp.type("text/html")

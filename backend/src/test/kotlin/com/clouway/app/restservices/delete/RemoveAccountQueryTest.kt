@@ -1,10 +1,12 @@
 package com.clouway.app.restservices.delete
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.delete.RemoveAccountRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
+import com.clouway.app.core.httpresponse.HttpResponseMessage
 import com.clouway.rules.RestServicesRule
+import com.google.gson.JsonObject
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpDelete
 import org.apache.http.impl.client.HttpClientBuilder
@@ -33,11 +35,11 @@ class RemoveAccountQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        delete("/v1/accounts/:id", SecuredRouteImpl(
+        delete("/v1/accounts/:id", Secured(
                 restServicesRule.sessionRepository,
                 RemoveAccountRoute(restServicesRule.accountRepository, restServicesRule.logger),
                 restServicesRule.logger
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -55,7 +57,9 @@ class RemoveAccountQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"This account has been removed successfully.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("This account has been removed successfully.")
+        ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId), `is`(nullValue()))
     }
 
@@ -68,7 +72,9 @@ class RemoveAccountQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"Account not found.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("Account not found.")
+        ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId), `is`(equalTo(account.apply { id = accountId })))
     }
 

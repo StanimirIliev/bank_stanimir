@@ -1,11 +1,11 @@
 package com.clouway.app.restservices.get
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.AccountsListRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
+import com.clouway.app.core.httpresponse.HttpResponseAccountsList
 import com.clouway.rules.RestServicesRule
-import com.google.gson.Gson
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
@@ -35,11 +35,11 @@ class AccountsQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        get("/v1/accounts", SecuredRouteImpl(
+        get("/v1/accounts", Secured(
                 restServicesRule.sessionRepository,
                 AccountsListRoute(restServicesRule.accountRepository),
                 restServicesRule.logger
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -55,15 +55,16 @@ class AccountsQueryTest {
         val secondAccount = Account("Another fund", userId, Currency.BGN, 0f)
         val firstAccountId = restServicesRule.accountRepository.registerAccount(firstAccount)
         val secondAccountId = restServicesRule.accountRepository.registerAccount(secondAccount)
-        val accountListJson = Gson().toJson(listOf(
-                secondAccount.apply { id = secondAccountId },
-                firstAccount.apply { id = firstAccountId }
-        ))
         val request = HttpGet(url)
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"content\":$accountListJson}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseAccountsList(listOf(
+                        secondAccount.apply { id = secondAccountId },
+                        firstAccount.apply { id = firstAccountId }
+                ))
+        ))))
     }
 
     @Test
@@ -75,6 +76,7 @@ class AccountsQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"content\":[]}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseAccountsList(emptyList())))))
     }
 }

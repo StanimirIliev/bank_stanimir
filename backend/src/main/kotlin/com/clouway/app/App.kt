@@ -1,6 +1,6 @@
 package com.clouway.app
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.delete.RemoveAccountRoute
 import com.clouway.app.adapter.http.get.*
 import com.clouway.app.adapter.http.post.*
@@ -18,10 +18,6 @@ import java.io.FileReader
 
 
 fun main(args: Array<String>) {
-    val sessionsTable = "Sessions"
-    val usersTable = "Users"
-    val transactionsTable = "Transactions"
-    val accountsTable = "Accounts"
 
     val config = Configuration(Configuration.VERSION_2_3_23)
     config.setDirectoryForTemplateLoading(File("freemarker/templates"))
@@ -37,10 +33,10 @@ fun main(args: Array<String>) {
     val jdbcTemplate = MySQLJdbcTemplate(mySqlDataSource)
     jdbcTemplate.execute(FileReader("schema/create_tables.sql").readText())// Creates tables if they are missing
 
-    val sessionRepository = JdbcSessionRepository(jdbcTemplate, sessionsTable, usersTable)
-    val transactionRepository = JdbcTransactionRepository(jdbcTemplate, transactionsTable)
-    val accountRepository = JdbcAccountRepository(jdbcTemplate, transactionRepository, accountsTable)
-    val userRepository = JdbcUserRepository(jdbcTemplate, usersTable)
+    val sessionRepository = JdbcSessionRepository(jdbcTemplate)
+    val transactionRepository = JdbcTransactionRepository(jdbcTemplate)
+    val accountRepository = JdbcAccountRepository(jdbcTemplate, transactionRepository)
+    val userRepository = JdbcUserRepository(jdbcTemplate)
     val compositeValidator = CompositeValidator(
             RegexValidationRule(
                     "userId",
@@ -63,28 +59,29 @@ fun main(args: Array<String>) {
         image.copyTo(res.raw().outputStream)
     }
 
+    val transformer = JsonTransformer()
+
     port(8080)
 
-    get("/assets/*", ResourcesRoute())
     get("/static/*", StaticFilesRoute())
     get("/index", IndexPageRoute())
-    post("/login", LoginPageRoutePost(userRepository, sessionRepository, config))
-    get("/login", LoginPageRouteGet(config))
-    get("/registration", RegistrationPageRouteGet(config))
-    post("/registration", RegistrationPageRoutePost(userRepository, sessionRepository, compositeValidator, config))
+    post("/login", LoginUserHandler(userRepository, sessionRepository, config))
+    get("/login", LoginPageRoute(config))
+    get("/registration", RegistrationPageRoute(config))
+    post("/registration", RegisterUserHandler(userRepository, sessionRepository, compositeValidator, config))
     get("/home", HomePageRoute())
     get("/logout", LogoutRoute(sessionRepository, logger))
     path("/v1") {
         path("/accounts") {
-            get("", SecuredRouteImpl(sessionRepository, AccountsListRoute(accountRepository), logger))
-            get("/:id", SecuredRouteImpl(sessionRepository, AccountDetailsRoute(accountRepository), logger))
-            post("", SecuredRouteImpl(sessionRepository, NewAccountRoute(accountRepository), logger))
-            post("/:id/deposit", SecuredRouteImpl(sessionRepository, DepositRoute(accountRepository), logger))
-            post("/:id/withdraw", SecuredRouteImpl(sessionRepository, WithdrawRoute(accountRepository), logger))
-            delete("/:id", SecuredRouteImpl(sessionRepository, RemoveAccountRoute(accountRepository, logger), logger))
+            get("", Secured(sessionRepository, AccountsListRoute(accountRepository), logger), transformer)
+            get("/:id", Secured(sessionRepository, AccountDetailsRoute(accountRepository), logger), transformer)
+            post("", Secured(sessionRepository, NewAccountRoute(accountRepository), logger), transformer)
+            post("/:id/deposit", Secured(sessionRepository, DepositRoute(accountRepository), logger), transformer)
+            post("/:id/withdraw", Secured(sessionRepository, WithdrawRoute(accountRepository), logger), transformer)
+            delete("/:id", Secured(sessionRepository, RemoveAccountRoute(accountRepository, logger), logger), transformer)
         }
-        get("/activity", ActivityRoute(sessionRepository))
-        get("/username", SecuredRouteImpl(sessionRepository, UsersRoute(userRepository), logger))
+        get("/activity", ActivityRoute(sessionRepository), transformer)
+        get("/username", Secured(sessionRepository, UsersRoute(userRepository), logger), transformer)
     }
     get("/*") { _, res -> res.redirect("/home") }
 

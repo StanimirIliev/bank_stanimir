@@ -8,6 +8,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import com.clouway.app.core.ErrorType.*
+import com.clouway.app.core.httpresponse.HttpResponseMessage
 
 class WithdrawRoute(private val accountRepository: AccountRepository) : SecuredRoute {
 
@@ -20,33 +21,33 @@ class WithdrawRoute(private val accountRepository: AccountRepository) : SecuredR
         val amount = data.params.value
         if (accountId == null || amount == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
-            return "{\"message\":\"Error. Id or amount parameter not passed.\"}"
+            return HttpResponseMessage("Error. Id or amount parameter not passed.")
         }
         val operationResponse = accountRepository.updateBalance(accountId, session.userId, amount * -1f)
         if (operationResponse.isSuccessful) {
             resp.status(HttpStatus.CREATED_201)
-            return "{\"message\":\"Withdraw isSuccessful.\"}"
+            return HttpResponseMessage("Withdraw successful.")
         }
         return when (operationResponse.error) {
             INCORRECT_ID -> {
                 resp.status(HttpStatus.NOT_FOUND_404)
-                "{\"message\":\"Account not found.\"}"
+                HttpResponseMessage("Account not found.")
             }
             INVALID_REQUEST -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                "{\"message\":\"Invalid request.\"}"
+                HttpResponseMessage("Invalid request.")
             }
             LOW_BALANCE -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                "{\"message\":\"Cannot execute this withdraw. Not enough balance.\"}"
+                HttpResponseMessage("Cannot execute this withdraw. Not enough balance.")
             }
             ACCESS_DENIED -> {
                 resp.status(HttpStatus.UNAUTHORIZED_401)
-                "{\"message\":\"Cannot execute this withdraw. Access denied.\"}"
+                HttpResponseMessage("Cannot execute this withdraw. Access denied.")
             }
             else -> {
                 resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                "{\"message\":\"Error occurred while executing the deposit.\"}"
+                HttpResponseMessage("Error occurred while executing the deposit.")
             }
         }
     }
