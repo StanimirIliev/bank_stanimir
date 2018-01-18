@@ -1,5 +1,6 @@
 package com.clouway.app.adapter.http.get
 
+import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import spark.Route
@@ -14,15 +15,19 @@ class StaticFilesRoute : Route {
         val uri = req.uri()
         val fileName = uri.substring(uri.indexOf("/", uri.indexOf("static")))
         return try {
-            val input = FileInputStream(staticDirLocation + fileName)
+            val fullPath = staticDirLocation + fileName
+            val input = FileInputStream(fullPath)
             when {
                 fileName.endsWith(".css") -> resp.type("text/css")
                 fileName.endsWith(".js") -> resp.type("application/javascript")
+                fileName.endsWith(".png") -> resp.type("image/png")
+                fileName.endsWith(".jpg") -> resp.type("image/jpeg")
             }
             input.copyTo(resp.raw().outputStream)
         } catch (e: FileNotFoundException) {
+            resp.status(HttpStatus.NOT_FOUND_404)
             resp.type("text/html")
-            return resp.body("<h1>Resource not found</h1")
+            resp.body("<h1>Resource not found</h1")
         }
     }
 }

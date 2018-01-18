@@ -21,7 +21,7 @@ class Secured(
             session = sessionRepository.getSessionAvailableAt(req.cookie("sessionId")!!, LocalDateTime.now())!!
         } catch (e: NullPointerException) {
             logger.error("Invalid session")
-            Spark.halt("{\"message\":\"Invalid session.\"}")
+            resp.redirect("/index")
         } finally {
             resp.type("application/json")
         }
