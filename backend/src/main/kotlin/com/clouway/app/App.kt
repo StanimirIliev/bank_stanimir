@@ -54,9 +54,7 @@ fun main(args: Array<String>) {
 
     initExceptionHandler { e -> logger.fatal("Unable to start the server", e) }
     internalServerError { _, res ->
-        res.type("image/jpeg")
-        val image = UsersRoute::class.java.getResourceAsStream("/images/500-wallpaper.jpg")
-        image.copyTo(res.raw().outputStream)
+        res.redirect("/static/index/images/500-wallpaper.jpg")
     }
 
     val transformer = JsonTransformer()
@@ -69,7 +67,7 @@ fun main(args: Array<String>) {
     get("/login", LoginPageRoute(config))
     get("/registration", RegistrationPageRoute(config))
     post("/registration", RegisterUserHandler(userRepository, sessionRepository, compositeValidator, config))
-    get("/home", HomePageRoute())
+    get("/home", Secured(sessionRepository, HomePageRoute(), logger))
     get("/logout", LogoutRoute(sessionRepository, logger))
     path("/v1") {
         path("/accounts") {
@@ -82,6 +80,7 @@ fun main(args: Array<String>) {
         }
         get("/activity", ActivityRoute(sessionRepository), transformer)
         get("/username", Secured(sessionRepository, UsersRoute(userRepository), logger), transformer)
+        get("/transactions/:param", Secured(sessionRepository, TransactionsRoute(transactionRepository), logger), transformer)
     }
     get("/*") { _, res -> res.redirect("/home") }
 

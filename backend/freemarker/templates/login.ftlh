@@ -3,12 +3,12 @@
 <head>
     <title>E corp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="static/welcome/css/desktop.css" rel="stylesheet" />
-    <link media="screen and (max-width:600px)" href="assets/css/phone.css" rel="stylesheet" />
+    <link href="static/index/css/desktop.css" rel="stylesheet" />
+    <link media="screen and (max-width:600px)" href="static/index/css/phone.css" rel="stylesheet" />
 </head>
 <body class="doc">
-<script src="assets/js/functionality.js"></script>
-<img class="logo" src="assets/images/logo.png" />
+<script src="static/index/js/functionality.js"></script>
+<img class="logo" src="static/index/images/logo.png" />
 <div class="container" >
     <form action="/login" class="form" method="post">
         <#if content != "">
