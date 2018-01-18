@@ -21,9 +21,8 @@ class StaticFilesRoute : Route {
             }
             input.copyTo(resp.raw().outputStream)
         } catch (e: FileNotFoundException) {
-            resp.type("image/jpeg")
-            val image = StaticFilesRoute::class.java.getResourceAsStream("/images/404-wallpaper.jpg")
-            return image.copyTo(resp.raw().outputStream)
+            resp.type("text/html")
+            return resp.body("<h1>Resource not found</h1")
         }
     }
 }

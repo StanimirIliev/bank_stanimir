@@ -8,14 +8,13 @@ import com.clouway.app.core.Operation.*
 
 class JdbcAccountRepository(
         private val jdbcTemplate: JdbcTemplate,
-        private val transactionRepository: TransactionRepository,
-        private val table: String
+        private val transactionRepository: TransactionRepository
 ) : AccountRepository {
     override fun registerAccount(account: Account): Int {
-        val affectedRows = jdbcTemplate.execute("INSERT INTO $table(Title, UserId, Currency, Balance) " +
+        val affectedRows = jdbcTemplate.execute("INSERT INTO Accounts(Title, UserId, Currency, Balance) " +
                 "VALUES('${account.title}', ${account.userId}, '${account.currency}', " +
                 "${account.balance})")
-        val list = jdbcTemplate.fetch("SELECT Id FROM $table WHERE Title='${account.title}' " +
+        val list = jdbcTemplate.fetch("SELECT Id FROM Accounts WHERE Title='${account.title}' " +
                 "AND UserId=${account.userId}",
                 object : RowMapper<Int> {
                     override fun fetch(rs: ResultSet): Int {
@@ -34,7 +33,7 @@ class JdbcAccountRepository(
         if (amount == 0f) {
             return OperationResponse(false, INVALID_REQUEST)
         }
-        if (jdbcTemplate.execute("UPDATE $table SET Balance=${amount + balance} WHERE Id=$accountId " +
+        if (jdbcTemplate.execute("UPDATE Accounts SET Balance=${amount + balance} WHERE Id=$accountId " +
                 "AND UserId=$userId") == 1 &&
                 transactionRepository.registerTransaction(Transaction(userId, accountId, LocalDateTime.now(),
                         if (amount < 0) WITHDRAW else DEPOSIT, amount))) {
@@ -44,7 +43,7 @@ class JdbcAccountRepository(
     }
 
     override fun getAllAccounts(userId: Int): List<Account> {
-        return jdbcTemplate.fetch("SELECT * FROM $table WHERE UserId=$userId",
+        return jdbcTemplate.fetch("SELECT * FROM Accounts WHERE UserId=$userId",
                 object : RowMapper<Account> {
                     override fun fetch(rs: ResultSet): Account {
                         return Account(rs.getString("Title"), userId,
@@ -58,14 +57,14 @@ class JdbcAccountRepository(
         if (getUserAccount(userId, accountId) == null) {
             return OperationResponse(false, ACCOUNT_NOT_FOUND)
         }
-        if (jdbcTemplate.execute("DELETE FROM $table WHERE Id=$accountId") == 1) {
+        if (jdbcTemplate.execute("DELETE FROM Accounts WHERE Id=$accountId") == 1) {
             return OperationResponse(true, null)
         }
         return OperationResponse(false, INTERNAL_ERROR)
     }
 
     override fun getUserAccount(userId: Int, accountId: Int): Account? {
-        val list = jdbcTemplate.fetch("SELECT * FROM $table WHERE Id=$accountId AND UserId=$userId",
+        val list = jdbcTemplate.fetch("SELECT * FROM Accounts WHERE Id=$accountId AND UserId=$userId",
                 object : RowMapper<Account> {
                     override fun fetch(rs: ResultSet): Account {
                         return Account(rs.getString("Title"), rs.getInt("UserId"),
@@ -76,7 +75,7 @@ class JdbcAccountRepository(
     }
 
     private fun getBalance(accountId: Int): Float? {
-        val list = jdbcTemplate.fetch("SELECT Balance FROM $table WHERE Id=$accountId",
+        val list = jdbcTemplate.fetch("SELECT Balance FROM Accounts WHERE Id=$accountId",
                 object : RowMapper<Float> {
                     override fun fetch(rs: ResultSet): Float {
                         return rs.getFloat("Balance")

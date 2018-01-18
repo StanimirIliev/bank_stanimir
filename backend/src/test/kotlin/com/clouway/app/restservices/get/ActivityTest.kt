@@ -1,6 +1,7 @@
 package com.clouway.app.restservices.get
 
 import com.clouway.app.adapter.http.get.ActivityRoute
+import com.clouway.app.core.httpresponse.HttpResponseActivity
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
@@ -34,7 +35,7 @@ class ActivityTest {
         port(port)
         get("/v1/activity", ActivityRoute(
                 restServicesRule.sessionRepository
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -50,6 +51,6 @@ class ActivityTest {
         val response = client.execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"activity\":1}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(HttpResponseActivity(1)))))
     }
 }

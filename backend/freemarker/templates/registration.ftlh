@@ -3,7 +3,7 @@
 <head>
     <title>E corp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="assets/css/desktop.css" rel="stylesheet" />
+    <link href="static/welcome/css/desktop.css" rel="stylesheet" />
     <link media="screen and (max-width:600px)" href="assets/css/phone.css" rel="stylesheet" />
 </head>
 <body class="doc">

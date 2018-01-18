@@ -1,11 +1,12 @@
 package com.clouway.app.restservices.get
 
-import com.clouway.app.adapter.http.SecuredRouteImpl
+import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.AccountDetailsRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
+import com.clouway.app.core.httpresponse.HttpResponseAccount
+import com.clouway.app.core.httpresponse.HttpResponseMessage
 import com.clouway.rules.RestServicesRule
-import com.google.gson.Gson
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
@@ -35,11 +36,11 @@ class AccountDetailsQueryTest {
     fun setUp() {
         cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
         port(port)
-        get("/v1/accounts/:id", SecuredRouteImpl(
+        get("/v1/accounts/:id", Secured(
                 restServicesRule.sessionRepository,
                 AccountDetailsRoute(restServicesRule.accountRepository),
                 restServicesRule.logger
-        ))
+        ), restServicesRule.transformer)
         awaitInitialization()
     }
 
@@ -53,12 +54,13 @@ class AccountDetailsQueryTest {
         val userId = restServicesRule.session.userId
         val account = Account("Fund for something", userId, Currency.BGN, 0f)
         val accountId = restServicesRule.accountRepository.registerAccount(account)
-        val accountJson = Gson().toJson(account.apply { id = accountId })
         val request = HttpGet(url + accountId)
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo("{\"account\":$accountJson}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseAccount(account.apply { id = accountId })
+        ))))
     }
 
     @Test
@@ -70,7 +72,9 @@ class AccountDetailsQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"Account not found.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("Account not found.")
+        ))))
     }
 
     @Test
@@ -79,6 +83,8 @@ class AccountDetailsQueryTest {
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
-        assertThat(responseContent, `is`(equalTo("{\"message\":\"Account not found.\"}")))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
+                HttpResponseMessage("Account not found.")
+        ))))
     }
 }

@@ -9,10 +9,10 @@ import java.io.StringWriter
 import java.time.LocalDateTime
 import java.util.*
 
-class RegistrationPageRoutePost(private val userRepository: UserRepository,
-                                private val sessionRepository: SessionRepository,
-                                private val validator: RequestValidator,
-                                private val config: Configuration) : Route {
+class RegisterUserHandler(private val userRepository: UserRepository,
+                          private val sessionRepository: SessionRepository,
+                          private val validator: RequestValidator,
+                          private val config: Configuration) : Route {
     override fun handle(req: Request, resp: Response): Any {
         val dataModel = HashMap<String, List<Error>>()
         val template = config.getTemplate("registration.ftlh")
@@ -43,9 +43,6 @@ class RegistrationPageRoutePost(private val userRepository: UserRepository,
             }
             else -> {
                 val userId = userRepository.getUserId(req.queryParams("username"))
-                val session = req.session(true)
-                session.maxInactiveInterval(2 * 60 * 60)// two hours
-                session.attribute("userId", userId)
                 val sessionId = sessionRepository.registerSession(Session(
                         userId,
                         LocalDateTime.now(),

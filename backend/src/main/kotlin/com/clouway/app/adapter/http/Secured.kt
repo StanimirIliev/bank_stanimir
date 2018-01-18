@@ -10,7 +10,7 @@ import spark.Route
 import spark.Spark
 import java.time.LocalDateTime
 
-class SecuredRouteImpl(
+class Secured(
         private val sessionRepository: SessionRepository,
         private val securedRoute: SecuredRoute,
         private val logger: Logger

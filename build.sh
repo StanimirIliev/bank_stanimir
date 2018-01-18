@@ -12,6 +12,7 @@ rm -rf backend/build/
 mv tmpFolder/Bank.jar build/
 rm -rf tmpFolder/
 cd frontend/
+cp -r index/ ../build/static
 npm run build
 mv build/{index.html,static/} ../build/
 rm -rf build/

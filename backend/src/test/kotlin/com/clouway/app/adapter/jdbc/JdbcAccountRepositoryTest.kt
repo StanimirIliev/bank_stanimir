@@ -17,8 +17,6 @@ class JdbcAccountRepositoryTest {
     @JvmField
     val dataStoreRule = DataStoreRule()
 
-    private val accountsTable = "Accounts"
-
 
     @Test
     fun tryToRegisterAccountForUnregisteredUserId() {
@@ -69,7 +67,7 @@ class JdbcAccountRepositoryTest {
         }
         val fakeAccountRepository = JdbcAccountRepository(
                 MySQLJdbcTemplate(dataStoreRule.mySqlDataSource),
-                mockTransactionRepository, accountsTable
+                mockTransactionRepository
         )
         val accountId = fakeAccountRepository.registerAccount(Account("some fund", userId, Currency.BGN, 0f))
         fakeAccountRepository.updateBalance(accountId, userId, 30f)

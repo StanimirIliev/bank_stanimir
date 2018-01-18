@@ -13,11 +13,6 @@ import java.io.FileReader
 class DataStoreRule() : ExternalResource() {
 
     val mySqlDataSource = MysqlDataSource()
-
-    private val accountsTable = "Accounts"
-    private val transactionsTable = "Transactions"
-    private val sessionsTable = "Sessions"
-    private val usersTable = "Users"
     lateinit var accountRepository: AccountRepository
     lateinit var transactionRepository: TransactionRepository
     lateinit var userRepository: UserRepository
@@ -30,10 +25,10 @@ class DataStoreRule() : ExternalResource() {
         mySqlDataSource.user = System.getenv("DB_USER")
         mySqlDataSource.setPassword(System.getenv("DB_PASS"))
         mySqlJdbcTemplate = MySQLJdbcTemplate(mySqlDataSource)
-        transactionRepository = JdbcTransactionRepository(mySqlJdbcTemplate, transactionsTable)
-        accountRepository = JdbcAccountRepository(mySqlJdbcTemplate, transactionRepository, accountsTable)
-        userRepository = JdbcUserRepository(mySqlJdbcTemplate, usersTable)
-        sessionRepository = JdbcSessionRepository(mySqlJdbcTemplate, sessionsTable, usersTable)
+        transactionRepository = JdbcTransactionRepository(mySqlJdbcTemplate)
+        accountRepository = JdbcAccountRepository(mySqlJdbcTemplate, transactionRepository)
+        userRepository = JdbcUserRepository(mySqlJdbcTemplate)
+        sessionRepository = JdbcSessionRepository(mySqlJdbcTemplate)
         val statement = mySqlDataSource.connection.createStatement()
         statement.execute(FileReader("schema/create_tables.sql").readText())
         statement.execute(FileReader("schema/clear_tables.sql").readText())
