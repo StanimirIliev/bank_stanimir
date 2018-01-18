@@ -12,8 +12,8 @@ const mock = new MockAdapter(axios)
 if (process.env.NODE_ENV === 'development') {
     console.log('Development mode')
     mock
-        .onGet('/v1/activity').reply(200, {
-            activity: 17
+        .onGet('/v1/activeUsers').reply(200, {
+            activeUsers: 17
         })
         .onGet('/v1/username').reply(200, {
             username: "user"
@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
                 }
             ]
         })
-        .onGet('/v1/accounts/100').reply(200,
+        .onGet('/v1/account', { params: { id: 100 } }).reply(200,
         {
             account: {
                 title: "Fund for something",
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        .onGet('/v1/accounts/101').reply(200,
+        .onGet('/v1/account', { params: { id: 101 } }).reply(200,
         {
             account: {
                 title: "Fund for other thing",
@@ -52,47 +52,51 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        .onPost('/v1/accounts/100/deposit', {
+        .onPost('/v1/executeDeposit', {
             params: {
+                id: 100,
                 value: 100
             }
         }).reply(200,
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/100/deposit', {
+        .onPost('/v1/executeDeposit', {
             params: {
+                id: 101,
                 value: 100
             }
         }).reply(200,
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/100/deposit').reply(400,
+        .onPost('/v1/executeDeposit').reply(400,
         {
             message: "Operation unsuccessful"
         })
-        .onPost('/v1/withdraw/100', {
+        .onPost('/v1/executeWithdraw', {
             params: {
+                id: 100,
                 value: 100
             }
         }).reply(200,
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/101/withdraw', {
+        .onPost('/v1/executeWithdraw', {
             params: {
+                id: 101,
                 value: 100
             }
         }).reply(200,
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/101/withdraw').reply(400,
+        .onPost('/v1/executeWithdraw').reply(400,
         {
             message: "Operation unsuccessful"
         })
-        .onPost('/v1/accounts', {
+        .onPost('/v1/newAccount', {
             params: {
                 title: 'acc',
                 currency: 'bgn'
@@ -100,15 +104,67 @@ if (process.env.NODE_ENV === 'development') {
         }).reply(200, {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts').reply(400, {
+        .onPost('/v1/newAccount').reply(400, {
             message: "You already have account with such a title"
         })
-        .onDelete('/v1/accounts/100').reply(200, {
+        .onDelete('/v1/removeAccount', {
+            params: {
+                id: 100
+            }
+        }).reply(200, {
             message: "Operation successful"
         })
-        .onDelete('/v1/accounts/*').reply(400, {
+        .onDelete('/v1/removeAccount').reply(400, {
             message: "Error with the server"
         })
+        .onGet('/v1/transactions/1', {
+            params: {
+                pageSize: 20
+            }
+        }).reply(200, {
+            transactions: [
+                {
+                    dateTime: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    account: 'Fund for something',
+                    operation: 'DEPOSIT',
+                    amount: 250.57,
+                    currency: 'EUR'
+                },
+                {
+                    dateTime: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    account: 'Fund for other thing',
+                    operation: 'WITHDRAW',
+                    amount: 14000,
+                    currency: 'BGN'
+                },
+            ]
+        })
+        .onGet('/v1/transactions/2').reply(200, {transactions:[]})
+        .onGet('/v1/transactions/count').reply(200, {transactionsCount: 200})
 }
 else {
     mock.restore()
@@ -124,8 +180,8 @@ export default class App extends Component {
     }
 
     updateActivity = () => {
-        axios.get('/v1/activity')
-            .then(response => this.setState({ activeUsers: response.data.activity }))
+        axios.get('/v1/activeUsers')
+            .then(response => this.setState({ activeUsers: response.data.activeUsers }))
             .catch(error => console.log(error))
     }
 
