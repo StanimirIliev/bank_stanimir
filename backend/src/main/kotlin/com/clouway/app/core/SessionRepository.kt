@@ -32,4 +32,11 @@ interface SessionRepository {
      * @return true if the operation was successful, false if error occurred
      */
     fun terminateSession(sessionId: String): Boolean
+
+    /**
+     * Deletes all inactive sessions from the DB
+     * @param instant the current DateTime
+     * @return the count of deleted sessions
+     */
+    fun terminateInactiveSessions(instant: LocalDateTime): Int
 }

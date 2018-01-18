@@ -54,4 +54,20 @@ class JdbcSessionRepository(private val jdbcTemplate: JdbcTemplate) : SessionRep
                 .execute("DELETE FROM Sessions WHERE Id='$sessionId'")
         return affectedRows == 1
     }
+
+    override fun terminateInactiveSessions(instant: LocalDateTime): Int {
+        val sessions = jdbcTemplate.fetch("SELECT * FROM Sessions",
+                object : RowMapper<Pair<Session, String>> {
+                    override fun fetch(rs: ResultSet): Pair<Session, String> {
+                        return Pair(Session(
+                                rs.getInt("UserId"),
+                                rs.getTimestamp("CreatedOn").toLocalDateTime(),
+                                rs.getTimestamp("ExpiresAt").toLocalDateTime()
+                        ), rs.getString("Id"))
+                    }
+                })
+        val inactiveSessions = sessions.filter { it.first.expiresAt.isBefore(instant) }
+        inactiveSessions.forEach {terminateSession(it.second)}
+        return inactiveSessions.count()
+    }
 }

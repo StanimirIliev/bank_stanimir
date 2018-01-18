@@ -84,4 +84,32 @@ class JdbcSessionRepositoryTest {
     fun tryToTerminateSessionThatWasNotRegistered() {
         assertThat(dataStoreRule.sessionRepository.terminateSession("notExistingId"), `is`(equalTo(false)))
     }
+
+    @Test
+    fun terminateInactiveSession() {
+        val userId = dataStoreRule.userRepository.registerUser("user123", "somePassword")
+        val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val activeTime = LocalDateTime.of(2018, 1, 12, 14, 30)
+        val instant = LocalDateTime.of(2018, 1, 12, 15, 25)
+        val session = Session(userId, createdOn, expiresAt)
+        val sessionId = dataStoreRule.sessionRepository.registerSession(session)!!
+        assertThat(dataStoreRule.sessionRepository.getSessionAvailableAt(sessionId, activeTime), `is`(equalTo(session)))
+        assertThat(dataStoreRule.sessionRepository.terminateInactiveSessions(instant), `is`(equalTo(1)))
+        assertThat(dataStoreRule.sessionRepository.getSessionAvailableAt(sessionId, activeTime), `is`(nullValue()))
+    }
+
+    @Test
+    fun tryToTerminateInactiveSessionsWhenAllSessionsAreActive() {
+
+        val userId = dataStoreRule.userRepository.registerUser("user123", "somePassword")
+        val createdOn = LocalDateTime.of(2018, 1, 12, 14, 10)
+        val expiresAt = LocalDateTime.of(2018, 1, 12, 15, 10)
+        val instant = LocalDateTime.of(2018, 1, 12, 14, 30)
+        val session = Session(userId, createdOn, expiresAt)
+        val sessionId = dataStoreRule.sessionRepository.registerSession(session)!!
+        assertThat(dataStoreRule.sessionRepository.getSessionAvailableAt(sessionId, instant), `is`(equalTo(session)))
+        assertThat(dataStoreRule.sessionRepository.terminateInactiveSessions(instant), `is`(equalTo(0)))
+        assertThat(dataStoreRule.sessionRepository.getSessionAvailableAt(sessionId, instant), `is`(equalTo(session)))
+    }
 }
