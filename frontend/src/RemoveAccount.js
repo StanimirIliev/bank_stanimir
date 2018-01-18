@@ -40,7 +40,7 @@ class AccountDetails extends Component {
             .catch(error => this.setState({
                 loading: false,
                 msg: {
-                    content: error.response.data.message,
+                    content: error.response.data.msg,
                     messageClass: 'message--negative'
                 }
             }))

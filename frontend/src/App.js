@@ -10,7 +10,6 @@ import './Responsiveness.css'
 const mock = new MockAdapter(axios)
 
 if (process.env.NODE_ENV === 'development') {
-    console.log('Development mode')
     mock
         .onGet('/v1/activity').reply(200, {
             activity: 17
@@ -43,7 +42,7 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
-        .onGet('/v1/accounts/101').reply(200,
+        .onGet('/v1/account/101').reply(200,
         {
             account: {
                 title: "Fund for other thing",
@@ -60,7 +59,7 @@ if (process.env.NODE_ENV === 'development') {
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/100/deposit', {
+        .onPost('/v1/accounts/101/deposit', {
             params: {
                 value: 100
             }
@@ -68,11 +67,11 @@ if (process.env.NODE_ENV === 'development') {
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/100/deposit').reply(400,
+        .onPost('/v1/accounts/*/deposit').reply(400,
         {
             message: "Operation unsuccessful"
         })
-        .onPost('/v1/withdraw/100', {
+        .onPost('/v1/accounts/100/withdraw', {
             params: {
                 value: 100
             }
@@ -82,13 +81,14 @@ if (process.env.NODE_ENV === 'development') {
         })
         .onPost('/v1/accounts/101/withdraw', {
             params: {
+                id: 101,
                 value: 100
             }
         }).reply(200,
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/101/withdraw').reply(400,
+        .onPost('/v1/accounts/*/withdraw').reply(400,
         {
             message: "Operation unsuccessful"
         })
@@ -98,7 +98,7 @@ if (process.env.NODE_ENV === 'development') {
                 currency: 'bgn'
             }
         }).reply(200, {
-            message: "Operation successful"
+            message: "New account created successful"
         })
         .onPost('/v1/accounts').reply(400, {
             message: "You already have account with such a title"
@@ -106,9 +106,55 @@ if (process.env.NODE_ENV === 'development') {
         .onDelete('/v1/accounts/100').reply(200, {
             message: "Operation successful"
         })
-        .onDelete('/v1/accounts/*').reply(400, {
+        .onDelete('/v1/accounts/101').reply(400, {
             message: "Error with the server"
         })
+        .onGet('/v1/transactions/1', {
+            params: {
+                pageSize: 20
+            }
+        }).reply(200, {
+            transactions: [
+                {
+                    onDate: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    accountId: 101,
+                    operation: 'DEPOSIT',
+                    amount: 250.57
+                },
+                {
+                    onDate: {
+                        date: {
+                            year: 2018,
+                            month: 1,
+                            day: 16
+                        },
+                        time: {
+                            hour: 14,
+                            minute: 8,
+                            second: 3,
+                            nano: 694000000
+                        }
+                    },
+                    accountId: 100,
+                    operation: 'WITHDRAW',
+                    amount: 14000
+                },
+            ]
+        })
+        .onGet('/v1/transactions/2').reply(200, {transactions:[]})
+        .onGet('/v1/transactions/count').reply(200, {transactionsCount: 200})
 }
 else {
     mock.restore()
@@ -119,13 +165,13 @@ export default class App extends Component {
         super()
         this.state = {
             username: "",
-            activeUsers: 0
+            activity: 0
         }
     }
 
     updateActivity = () => {
         axios.get('/v1/activity')
-            .then(response => this.setState({ activeUsers: response.data.activity }))
+            .then(response => this.setState({ activity: response.data.activity }))
             .catch(error => console.log(error))
     }
 
@@ -143,7 +189,7 @@ export default class App extends Component {
                     <div className="greetings">
                         <h1 className="greetings__element">Welcome {this.state.username}</h1>
                         <div className="greetings__element"><hr className="greetings--splitter" /></div>
-                        <h1 className="greetings__element">{this.state.activeUsers} active users</h1>
+                        <h1 className="greetings__element">{this.state.activity} active users</h1>
                     </div>
                     <MainMenu />
                 </div>

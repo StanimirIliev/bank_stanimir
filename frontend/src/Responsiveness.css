@@ -73,6 +73,33 @@
         font-size: 18pt;
         border-radius: 10px;
     }
+    .container__transaction {
+        height: 50%;
+        margin-top: 1%;
+    }
+    .table__transaction {
+        font-size: 16pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 18pt;
+    }
+    .transactions__navigation {
+        font-size: 15pt;
+    }
+    .transactions__navigation__item--current:first-child,
+    .transactions__navigation__item:first-child {
+        border-bottom-left-radius: 7px;
+        border-top-left-radius: 7px;
+    }
+    .transactions__navigation__item--current:last-child,
+    .transactions__navigation__item:last-child {
+        border-bottom-right-radius: 7px;
+        border-top-right-radius: 7px;
+    }
+    .transactions__navigation__item--current,
+    .transactions__navigation__link {
+        width: 35px;
+    }
 }
 
 @media screen and (min-width: 850px) and (max-width: 1024px) {
@@ -166,6 +193,15 @@
         line-height: 30px;
         font-size: 15pt;
         border-radius: 7px;
+    }
+    .table__transaction {
+        font-size: 14pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 16pt;
+    }
+    .transactions__navigation {
+        font-size: 13pt;
     }
 }
 
@@ -270,6 +306,32 @@
         line-height: 25px;
         font-size: 10pt;
         border-radius: 6px;
+    }
+    .container__transaction {
+        margin-top: 0;
+    }
+    .table__transaction {
+        font-size: 10pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 12pt;
+    }
+    .transactions__navigation {
+        font-size: 10pt;
+    }
+    .transactions__navigation__item--current:first-child,
+    .transactions__navigation__item:first-child {
+        border-bottom-left-radius: 5px;
+        border-top-left-radius: 5px;
+    }
+    .transactions__navigation__item--current:last-child,
+    .transactions__navigation__item:last-child {
+        border-bottom-right-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    .transactions__navigation__item--current,
+    .transactions__navigation__link {
+        width: 25px;
     }
 }
 
@@ -379,6 +441,32 @@
     }
     .splitter__accounts {
         height: 1px;
+    }
+    .container__transaction {
+        height: 40%;
+    }
+    .table__transaction {
+        font-size: 8pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 10pt;
+    }
+    .transactions__navigation {
+        font-size: 8pt;
+    }
+    .transactions__navigation__item--current:first-child,
+    .transactions__navigation__item:first-child {
+        border-bottom-left-radius: 3px;
+        border-top-left-radius: 3px;
+    }
+    .transactions__navigation__item--current:last-child,
+    .transactions__navigation__item:last-child {
+        border-bottom-right-radius: 3px;
+        border-top-right-radius: 3px;
+    }
+    .transactions__navigation__item--current,
+    .transactions__navigation__link {
+        width: 20px;
     }
 }
 
@@ -503,6 +591,29 @@
     }
     .splitter__accounts {
         height: 1px;
+    }
+    .table__transaction {
+        font-size: 7pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 9pt;
+    }
+    .transactions__navigation {
+        font-size: 7pt;
+    }
+    .transactions__navigation__item--current:first-child,
+    .transactions__navigation__item:first-child {
+        border-bottom-left-radius: 2.5px;
+        border-top-left-radius: 2.5px;
+    }
+    .transactions__navigation__item--current:last-child,
+    .transactions__navigation__item:last-child {
+        border-bottom-right-radius: 2.5px;
+        border-top-right-radius: 2.5px;
+    }
+    .transactions__navigation__item--current,
+    .transactions__navigation__link {
+        width: 15px;
     }
 }
 
@@ -630,5 +741,28 @@
     }
     .splitter__accounts {
         height: 1px;
+    }
+    .table__transaction {
+        font-size: 6pt;
+    }
+    .table__transaction__header__rows {
+        font-size: 8pt;
+    }
+    .transactions__navigation {
+        font-size: 6pt;
+    }
+    .transactions__navigation__item--current:first-child,
+    .transactions__navigation__item:first-child {
+        border-bottom-left-radius: 2px;
+        border-top-left-radius: 2px;
+    }
+    .transactions__navigation__item--current:last-child,
+    .transactions__navigation__item:last-child {
+        border-bottom-right-radius: 2px;
+        border-top-right-radius: 2px;
+    }
+    .transactions__navigation__item--current,
+    .transactions__navigation__link {
+        width: 12px;
     }
 }
