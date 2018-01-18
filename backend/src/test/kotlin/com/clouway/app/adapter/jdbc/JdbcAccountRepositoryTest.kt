@@ -17,7 +17,6 @@ class JdbcAccountRepositoryTest {
     @JvmField
     val dataStoreRule = DataStoreRule()
 
-
     @Test
     fun tryToRegisterAccountForUnregisteredUserId() {
         assertThat(dataStoreRule.accountRepository.registerAccount(Account("some fund",

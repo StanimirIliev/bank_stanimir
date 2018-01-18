@@ -15,7 +15,7 @@ import org.apache.log4j.Logger
 import spark.Spark.*
 import java.io.File
 import java.io.FileReader
-
+import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) {
 
@@ -83,5 +83,11 @@ fun main(args: Array<String>) {
         get("/transactions/:param", Secured(sessionRepository, TransactionsRoute(transactionRepository), logger), transformer)
     }
     get("/*") { _, res -> res.redirect("/home") }
+	Thread(InactiveSessionsRemover(
+    	5,
+        TimeUnit.SECONDS,
+        sessionRepository,
+        Logger.getLogger("InactiveSessionsRemover")
+    )).start()
 
 }
