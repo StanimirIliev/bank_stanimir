@@ -19,7 +19,7 @@ export default class Navigation extends Component {
 
         for (let i = 1; i <= pages; i++) {
             if (boxesLeft > 0 && (currentPage <= middle || i > currentPage - middle || i > pages - maxBoxes)) {
-                if (i == currentPage) {
+                if (i === currentPage) {
                     navBar.push(
                         <li key={i} className="transactions__navigation__item--current">{i}</li>)
                 }

@@ -3,7 +3,7 @@ import './Loading.css'
 
 const Loading = () => (
     <div className="container__loading"  >
-        <img className="loading__img"  src={require("./icons/loading.png")}/>
+        <img className="loading__img"  src={require("../../../icons/loading.png")}/>
     </div>
 )
 

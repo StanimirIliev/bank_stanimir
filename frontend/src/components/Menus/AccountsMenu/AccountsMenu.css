@@ -8,15 +8,6 @@
     left: 15%;
     top: 10%;
 }
-.button--close {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 20px;
-    border-top-left-radius: 20px;
-}
 .container__options {
     display: flex;
     flex-direction: column;

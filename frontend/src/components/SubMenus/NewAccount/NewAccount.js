@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import './NewAccount.css'
-import Loading from './Loading'
-import Message from './Message'
+import Loading from '../../Common/Loading'
+import Message from '../../Common/Message'
 import axios from 'axios'
+import './NewAccount.css'
 
 class NewAccount extends Component {
     constructor() {
@@ -30,14 +30,14 @@ class NewAccount extends Component {
                 loading: false,
                 message: {
                     content: resp.data.message,
-                    messageClass: 'message--positive'
+                    positive: true
                 }
             }))
             .catch(error => this.setState({
                 loading: false,
                 message: {
                     content: error.response.data.message,
-                    messageClass: 'message--negative'
+                    positive: false
                 }
             }))
     }
@@ -57,7 +57,7 @@ class NewAccount extends Component {
             return (<Loading />)
         }
         if (message != null) {
-            return (<Message returnPath="/main" messageClass={message.messageClass} content={message.content} />)
+            return (<Message returnPath="/main" messageClass={message.positive ? 'message--positive' : 'message--negative'} content={message.content} />)
         }
         return (
             <div className="container__accounts">

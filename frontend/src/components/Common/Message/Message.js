@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {Link} from 'react-router-dom'
+import BackButton from '../BackButton'
 import './Message.css'
 
 class Message extends Component {
@@ -13,7 +14,7 @@ class Message extends Component {
         return (
             <div className="container__accounts">
                 <h1 className={this.props.messageClass}>{this.props.content}</h1> <br/>
-                <Link className="linkButton button--close"  to={this.state.returnPath}>Return</Link>
+                <BackButton to={this.state.returnPath} name="Return" />
             </div> 
         )
     }

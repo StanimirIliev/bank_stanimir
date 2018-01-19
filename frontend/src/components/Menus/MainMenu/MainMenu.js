@@ -1,19 +1,15 @@
 import React from 'react'
 import { Link, Route } from 'react-router-dom'
-import AccountsMenu from './AccountsMenu'
-import ShowAccounts from './ShowAccounts'
-import AccountDetails from './AccountDetails'
+import AccountsMenu from '../AccountsMenu'
+import ShowAccounts from '../../SubMenus/ShowAccounts'
+import AccountDetails from '../../SubMenus/AccountDetails'
+import Deposit from '../../Operations/Deposit'
+import Withdraw from '../../Operations/Withdraw'
+import NewAccount from '../../SubMenus/NewAccount'
+import RemoveAccountsMenu from '../RemoveAccountMenu'
+import RemoveAccount from '../../SubMenus/RemoveAccount'
+import Transactions from '../Transactions'
 import './MainMenu.css'
-import Loading from './Loading'
-import Deposit from './Deposit'
-import Withdraw from './Withdraw'
-import Message from './Message'
-import NewAccount from './NewAccount'
-import RemoveAccountsMenu from './RemoveAccountsMenu'
-import removeAccount from './RemoveAccount'
-import Transactions from './Transactions'
-
-import axios from 'axios'
 
 const Menu = (match) => (
     <div className="main-menu" >
@@ -27,7 +23,7 @@ const Menu = (match) => (
         <Route exact path="/accounts/:id/withdraw" component={Withdraw} />
         <Route exact path="/new" component={NewAccount} />
         <Route exact path="/delete" component={RemoveAccountsMenu} />
-        <Route exact path="/accounts/:id/delete" component={removeAccount} />
+        <Route exact path="/accounts/:id/delete" component={RemoveAccount} />
         <Route path="/transactions" component={Transactions} />
     </div>
 )

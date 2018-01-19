@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import Loading from '../../Common/Loading'
+import Money from '../../Common/Money'
 import './AccountDetails.css'
-import Loading from './Loading'
 
 class AccountDetails extends Component {
     constructor(props) {
@@ -31,11 +32,7 @@ class AccountDetails extends Component {
 
         const currency = this.state.account.currency
         const title = this.state.account.title
-        const balance =
-            new Intl.NumberFormat('de-DE', {
-                style: 'currency',
-                currency: currency
-            }).format(this.state.account.balance)
+        const balance = <Money amount={this.state.account.balance} currency={currency} digits={2} />
         const id = this.state.id
 
         return (
