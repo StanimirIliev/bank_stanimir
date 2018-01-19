@@ -84,8 +84,8 @@ fun main(args: Array<String>) {
     }
     get("/*") { _, res -> res.redirect("/home") }
 	Thread(InactiveSessionsRemover(
-    	5,
-        TimeUnit.SECONDS,
+    	1,
+        TimeUnit.HOURS,
         sessionRepository,
         Logger.getLogger("InactiveSessionsRemover")
     )).start()
