@@ -1,6 +1,7 @@
 package com.clouway.app.adapter.http.get
 
 import com.clouway.app.core.SessionRepository
+import com.clouway.app.core.httpresponse.HttpResponseMessage
 import org.apache.log4j.Logger
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
@@ -17,7 +18,7 @@ class LogoutRoute(private val sessionRepository: SessionRepository, private val 
             if (!sessionRepository.terminateSession(req.cookie("sessionId"))) {
                 resp.type("application/json")
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                "{\"message\":\"Unable to terminate your session.\"}"
+                HttpResponseMessage("Unable to terminate your session.")
             } else {
                 req.session().invalidate()
                 resp.redirect("/index")
