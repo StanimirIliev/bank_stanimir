@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import './App.css'
 import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { BrowserRouter as Router } from 'react-router-dom'
-import MainMenu from './MainMenu'
+import MainMenu from './components/Menus/MainMenu'
+import './App.css'
 import './Responsiveness.css'
 
 
@@ -51,6 +51,14 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
         )
+        .onPost(/\/v1\/accounts\/d+\/deposit/, {
+            params: {
+                value: 100
+            }
+        }).reply(200,
+        {
+            message: "Operation successful"
+        })
         .onPost('/v1/accounts/100/deposit', {
             params: {
                 value: 100
@@ -59,19 +67,11 @@ if (process.env.NODE_ENV === 'development') {
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/101/deposit', {
-            params: {
-                value: 100
-            }
-        }).reply(200,
-        {
-            message: "Operation successful"
-        })
-        .onPost('/v1/accounts/*/deposit').reply(400,
+        .onPost('/v1/accounts/100/deposit').reply(400,
         {
             message: "Operation unsuccessful"
         })
-        .onPost('/v1/accounts/100/withdraw', {
+        .onPost('/v1/accounts/*/withdraw', {
             params: {
                 value: 100
             }
@@ -79,7 +79,7 @@ if (process.env.NODE_ENV === 'development') {
         {
             message: "Operation successful"
         })
-        .onPost('/v1/accounts/101/withdraw', {
+        .onPost('/v1/accounts/*/withdraw', {
             params: {
                 id: 101,
                 value: 100
@@ -103,57 +103,39 @@ if (process.env.NODE_ENV === 'development') {
         .onPost('/v1/accounts').reply(400, {
             message: "You already have account with such a title"
         })
-        .onDelete('/v1/accounts/100').reply(200, {
+        .onDelete('/v1/accounts/*').reply(200, {
             message: "Operation successful"
         })
-        .onDelete('/v1/accounts/101').reply(400, {
+        .onDelete('/v1/accounts/*').reply(400, {
             message: "Error with the server"
         })
-        .onGet('/v1/transactions/1', {
-            params: {
-                pageSize: 20
-            }
-        }).reply(200, {
+        .onGet('/v1/transactions/1?pageSize=20').reply(200, {
             transactions: [
                 {
-                    onDate: {
-                        date: {
-                            year: 2018,
-                            month: 1,
-                            day: 16
-                        },
-                        time: {
-                            hour: 14,
-                            minute: 8,
-                            second: 3,
-                            nano: 694000000
-                        }
-                    },
-                    accountId: 101,
+                    onDate: "Jan 27, 2018 12:47:47 AM",
+                    title: "Some fund",
+                    currency: "BGN",
                     operation: 'DEPOSIT',
                     amount: 250.57
                 },
                 {
-                    onDate: {
-                        date: {
-                            year: 2018,
-                            month: 1,
-                            day: 16
-                        },
-                        time: {
-                            hour: 14,
-                            minute: 8,
-                            second: 3,
-                            nano: 694000000
-                        }
-                    },
-                    accountId: 100,
+                    onDate: "Jan 27, 2018 1:53:28 PM",
+                    title: "Another fund",
+                    currency: "EUR",
                     operation: 'WITHDRAW',
                     amount: 14000
                 },
             ]
         })
-        .onGet('/v1/transactions/2').reply(200, {transactions:[]})
+        .onGet(/\/v1\/transactions\/\d+/).reply(200, {transactions: [
+            {
+                onDate: "Jan 27, 2018 1:53:28 PM",
+                title: "Some fund",
+                currency: "BGN",
+                operation: 'WITHDRAW',
+                amount: 14000
+            }
+        ]})
         .onGet('/v1/transactions/count').reply(200, {transactionsCount: 200})
 }
 else {

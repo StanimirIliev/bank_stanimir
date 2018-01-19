@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { Route, Link} from 'react-router-dom'
-import TransactionPage from './TransactionPage'
-import Navigation from './Navigation'
+import TransactionPage from '../../SubMenus/TransactionPage'
+import Navigation from '../Transactions/Navigation'
 import axios from 'axios'
-import Loading from './Loading'
+import Loading from '../../Common/Loading'
+import BackButton from '../../Common/BackButton'
 
 
 class Transactions extends Component {
@@ -26,7 +27,6 @@ class Transactions extends Component {
             .catch(error => this.setState({
                 loading: false
             }))
-		console.log(this.state)
     }
 
     render() {
@@ -59,7 +59,7 @@ class Transactions extends Component {
                     {routes}
                 </div>
                 <Navigation pages={pages} />
-                <Link className="linkButton button--close" to="/">Close</Link>
+                <BackButton to="/" name="Close"/>
             </div>
         )
     }

@@ -18,9 +18,8 @@ import java.io.FileReader
 
 
 fun main(args: Array<String>) {
-
     val config = Configuration(Configuration.VERSION_2_3_23)
-    config.setDirectoryForTemplateLoading(File("templates"))
+    config.setDirectoryForTemplateLoading(File("freemarker/templates/"))
     config.defaultEncoding = "UTF-8"
     config.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
     config.logTemplateExceptions = false
@@ -80,7 +79,8 @@ fun main(args: Array<String>) {
         }
         get("/activity", ActivityRoute(sessionRepository), transformer)
         get("/username", Secured(sessionRepository, UsersRoute(userRepository), logger), transformer)
-        get("/transactions/:param", Secured(sessionRepository, TransactionsRoute(transactionRepository), logger), transformer)
+        get("/transactions/:param", Secured(sessionRepository, TransactionsRoute(transactionRepository,
+                accountRepository), logger), transformer)
     }
     get("/*") { _, res -> res.redirect("/home") }
 

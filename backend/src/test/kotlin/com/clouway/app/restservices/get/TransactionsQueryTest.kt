@@ -6,6 +6,7 @@ import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
 import com.clouway.app.core.Operation
 import com.clouway.app.core.Transaction
+import com.clouway.app.core.httpresponse.HttpResponseTransaction
 import com.clouway.app.core.httpresponse.HttpResponseTransactionsCount
 import com.clouway.app.core.httpresponse.HttpResponseTransactionsList
 import com.clouway.rules.RestServicesRule
@@ -21,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 import spark.Spark
 import java.nio.charset.Charset
+import java.sql.Timestamp
 import java.time.LocalDateTime
 
 class TransactionsQueryTest {
@@ -36,7 +38,7 @@ class TransactionsQueryTest {
         Spark.port(port)
         Spark.get("/v1/transactions/:param", Secured(
                 restServicesRule.sessionRepository,
-                TransactionsRoute(restServicesRule.transactionRepository),
+                TransactionsRoute(restServicesRule.transactionRepository, restServicesRule.accountRepository),
                 restServicesRule.logger
         ), restServicesRule.transformer)
         Spark.awaitInitialization()
@@ -74,13 +76,15 @@ class TransactionsQueryTest {
                 Account("Some fund", userId, Currency.BGN, 0f))
         val instant = LocalDateTime.of(2018, 1, 18, 18, 17)
         val transaction = Transaction(userId, accountId, instant, Operation.DEPOSIT, 50f)
+        val httpTransactionDTO = HttpResponseTransaction(userId, Timestamp.valueOf(instant), Operation.DEPOSIT,
+                "Some fund", Currency.BGN, 50f)
         restServicesRule.transactionRepository.registerTransaction(transaction)
         val request = HttpGet(url + "1?pageSize=1")
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, CoreMatchers.`is`(CoreMatchers.equalTo(HttpStatus.OK_200)))
         assertThat(responseContent, CoreMatchers.`is`(CoreMatchers.equalTo(restServicesRule.gson.toJson(
-                HttpResponseTransactionsList(listOf(transaction))
+                HttpResponseTransactionsList(listOf(httpTransactionDTO))
         ))))
     }
 }

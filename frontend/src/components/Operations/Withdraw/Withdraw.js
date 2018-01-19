@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import Loading from './Loading'
-import Msg from './Message'
+import Loading from '../../Common/Loading'
+import Msg from '../../Common/Message'
 import axios from 'axios'
-
-class Deposit extends Component {
+import Money from '../../Common/Money'
+class Withdraw extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -13,13 +13,15 @@ class Deposit extends Component {
             account: {},
             error: null,
             msg: null,
-            depositValue: null
+            withdrawValue: null
         }
-        this.handleChange = this.handleChange.bind(this);
+        this.handleChange = this.handleChange.bind(this)
     }
 
     componentWillMount() {
-        this.setState({ loading: true })
+        this.setState({
+            loading: true
+        })
         axios.get(`/v1/accounts/${this.state.id}`)
             .then(resp => this.setState({
                 account: resp.data.account,
@@ -31,31 +33,31 @@ class Deposit extends Component {
             }))
     }
 
-    executeDeposit() {
+    executeWithdraw() {
         this.setState({ loading: true })
-        axios.post(`/v1/accounts/${this.state.id}/deposit`, {
+        axios.post(`/v1/accounts/${this.state.id}/withdraw`, {
             params: {
-                value: parseFloat(this.state.depositValue)
+                value: parseFloat(this.state.withdrawValue)
             }
         })
             .then(resp => this.setState({
                 msg: {
                     content: resp.data.message,
-                    messageClass: 'message--positive'
+                    positive: true
                 },
                 loading: false
             }))
             .catch(error => this.setState({
                 msg: {
                     content: error.response.data.message,
-                    messageClass: 'message--negative'
+                    positive: false
                 },
                 loading: false
             }))
     }
 
     handleChange(event) {
-        this.setState({ depositValue: event.target.value })
+        this.setState({ withdrawValue: event.target.value })
     }
 
     render() {
@@ -65,34 +67,27 @@ class Deposit extends Component {
             return (<Loading />)
         }
         if (msg != null) {
-            return (<Msg content={msg.content}
-                messageClass={msg.messageClass}
-                returnPath={`/accounts/${id}`} />)
+            return (<Msg content={msg.content} messageClass={msg.positive ? 'message--positive' : 'message--negative'} returnPath={`/accounts/${id}`} />)
         }
         return (
             <div className="container__accounts">
-                <h1 className="account_menu__header">Deposit to: {account.title}</h1>
+                <h1 className="account_menu__header">Withdraw from: {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
-                        <b>Balance:</b> {
-                            new Intl.NumberFormat('de-DE', {
-                                style: 'currency',
-                                currency: account.currency
-                            }).format(account.balance)
-                        }
+                        <b>Balance:</b> <Money amount={account.balance} currency={account.currency} digits={2} />
                     </div>
                     <hr className="operation__splitter" />
                     <div className="container__operation" >
-                        <div className="operation__name">Enter the amount of the deposit</div>
+                        <div className="operation__name">Enter the amount of the withdraw</div>
                         <input className="operation__input" placeholder="e.g. 500"
                             onChange={this.handleChange} />
                     </div>
                 </div>
-                <button className="button button--execute" onClick={() => { this.executeDeposit() }}>Execute</button>
+                <button className="button button--execute" onClick={() => { this.executeWithdraw() }}>Execute</button>
                 <Link className="linkButton button--close" to={`/accounts/${id}`}>Back</Link>
             </div>
         )
     }
 }
 
-export default Deposit
+export default Withdraw

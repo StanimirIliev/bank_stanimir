@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import Loading from '../../Common/Loading'
+import Message from '../../Common/Message'
+import Money from '../../Common/Money'
 import './RemoveAccount.css'
-import Loading from './Loading'
-import Message from './Message'
-
 
 class AccountDetails extends Component {
     constructor(props) {
@@ -34,20 +34,20 @@ class AccountDetails extends Component {
                 loading: false,
                 msg: {
                     content: response.data.message,
-                    messageClass: 'message--positive'
+                    positive: true
                 }
             }))
             .catch(error => this.setState({
                 loading: false,
                 msg: {
                     content: error.response.data.msg,
-                    messageClass: 'message--negative'
+                    positive: false
                 }
             }))
     }
 
     render() {
-        const { loading, msg, title, account, id } = this.state
+        const { loading, msg, account } = this.state
         if (loading) {
             return (<Loading />)
         }
@@ -55,7 +55,7 @@ class AccountDetails extends Component {
         if (msg != null) {
             return (<Message returnPath="/delete"
                 content={msg.content}
-                messageClass={msg.messageClass} />)
+                messageClass={msg.positive ? 'message--positive' : 'message--negative'} />)
         }
 
         return (
@@ -63,13 +63,7 @@ class AccountDetails extends Component {
                 <h1 className="account_menu__header">Are you sure you want to delete account:<br />  {account.title}</h1>
                 <div className="container__selected_account">
                     <div className="selected_account__balance">
-                        <b>Balance:</b>
-                        {
-                            new Intl.NumberFormat('de-DE', {
-                                style: 'currency',
-                                currency: account.currency
-                            }).format(account.balance)
-                        }
+                        <b>Balance:</b> <Money amount={account.balance} currency={account.currency} digits={2} />
                     </div>
                     <div className="selected_account__buttons">
                         <button className="button remove_account__buttons" onClick={() => {
