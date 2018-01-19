@@ -5,7 +5,7 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-mainClassName = 'com.clouway.app.AppKt'
+mainClassName = 'com.clouway.bankapp.AppKt'
 sourceCompatibility = 1.8
 jar.enabled = false
 

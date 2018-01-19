@@ -1,0 +1,38 @@
+package com.clouway.bankapp.adapter.http.delete
+
+import com.clouway.bankapp.core.AccountRepository
+import com.clouway.bankapp.core.ErrorType.ACCOUNT_NOT_FOUND
+import com.clouway.bankapp.core.httpresponse.HttpResponseMessage
+import com.clouway.bankapp.core.SecuredRoute
+import com.clouway.bankapp.core.Session
+import org.apache.log4j.Logger
+import org.eclipse.jetty.http.HttpStatus
+import spark.Request
+import spark.Response
+
+class RemoveAccountRoute(
+        private val accountRepository: AccountRepository,
+        private val logger: Logger
+) : SecuredRoute {
+    override fun handle(req: Request, resp: Response, session: Session): Any {
+        val accountId = req.params("id")
+        if (accountId == null) {
+            resp.status(HttpStatus.BAD_REQUEST_400)
+            return HttpResponseMessage("Cannot remove this account. No account id passed with the request.")
+        } else {
+            val operationResponse = accountRepository.removeAccount(accountId.toInt(), session.userId)
+
+            if (operationResponse.isSuccessful) {
+                resp.status(HttpStatus.OK_200)
+                return HttpResponseMessage("This account has been removed successfully.")
+            }
+            if (operationResponse.error == ACCOUNT_NOT_FOUND) {
+                resp.status(HttpStatus.NOT_FOUND_404)
+                return HttpResponseMessage("Account not found.")
+            }
+            resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+            logger.fatal("Error occurred while removing account $accountId, requested by user ${session.userId}")
+            return HttpResponseMessage("Error occurred while removing this account.")
+        }
+    }
+}

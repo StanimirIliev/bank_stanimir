@@ -1,12 +1,12 @@
 package com.clouway.rules
 
-import com.clouway.app.JsonTransformer
-import com.clouway.app.MySQLJdbcTemplate
-import com.clouway.app.adapter.jdbc.JdbcAccountRepository
-import com.clouway.app.adapter.jdbc.JdbcSessionRepository
-import com.clouway.app.adapter.jdbc.JdbcTransactionRepository
-import com.clouway.app.adapter.jdbc.JdbcUserRepository
-import com.clouway.app.core.*
+import com.clouway.bankapp.JsonTransformer
+import com.clouway.bankapp.MySQLJdbcTemplate
+import com.clouway.bankapp.adapter.jdbc.JdbcAccountRepository
+import com.clouway.bankapp.adapter.jdbc.JdbcSessionRepository
+import com.clouway.bankapp.adapter.jdbc.JdbcTransactionRepository
+import com.clouway.bankapp.adapter.jdbc.JdbcUserRepository
+import com.clouway.bankapp.core.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.mysql.cj.jdbc.MysqlDataSource
