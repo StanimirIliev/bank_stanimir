@@ -20,7 +20,7 @@ import java.io.FileReader
 fun main(args: Array<String>) {
 
     val config = Configuration(Configuration.VERSION_2_3_23)
-    config.setDirectoryForTemplateLoading(File("freemarker/templates"))
+    config.setDirectoryForTemplateLoading(File("templates"))
     config.defaultEncoding = "UTF-8"
     config.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
     config.logTemplateExceptions = false
@@ -68,7 +68,7 @@ fun main(args: Array<String>) {
     get("/registration", RegistrationPageRoute(config))
     post("/registration", RegisterUserHandler(userRepository, sessionRepository, compositeValidator, config))
     get("/home", Secured(sessionRepository, HomePageRoute(), logger))
-    get("/logout", LogoutRoute(sessionRepository, logger))
+    get("/logout", LogoutRoute(sessionRepository, logger), transformer)
     path("/v1") {
         path("/accounts") {
             get("", Secured(sessionRepository, AccountsListRoute(accountRepository), logger), transformer)
