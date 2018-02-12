@@ -1,7 +1,7 @@
 .new_account__button {
     width: 120px;
-    height: 42px;
-    font-size: 19pt;
+    height: 42px !important;
+    font-size: 19pt !important;
     border-radius: 10px;
     float: right;
     margin-right: 30%;

@@ -8,7 +8,7 @@ import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
 import com.clouway.app.core.ErrorType.*
-import com.clouway.app.core.httpresponse.HttpResponseMessage
+import com.clouway.app.core.httpresponse.GetMessageResponseDto
 
 class DepositRoute(private val accountRepository: AccountRepository) : SecuredRoute {
 
@@ -21,29 +21,29 @@ class DepositRoute(private val accountRepository: AccountRepository) : SecuredRo
         val amount = data?.params?.value
         if (accountId == null || amount == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
-            return HttpResponseMessage("Cannot execute this deposit. No account id or value passed with the request.")
+            return GetMessageResponseDto("Cannot execute this deposit. No account id or value passed with the request.")
         }
         val operationResponse = accountRepository.updateBalance(accountId, session.userId, amount)
         if (operationResponse.isSuccessful) {
             resp.status(HttpStatus.CREATED_201)
-            return HttpResponseMessage("Deposit successful.")
+            return GetMessageResponseDto("Deposit successful.")
         }
         return when (operationResponse.error) {
             INCORRECT_ID -> {
                 resp.status(HttpStatus.NOT_FOUND_404)
-                HttpResponseMessage("Account not found.")
+                GetMessageResponseDto("Account not found.")
             }
             INVALID_REQUEST -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                HttpResponseMessage("Invalid request.")
+                GetMessageResponseDto("Invalid request.")
             }
             ACCESS_DENIED -> {
                 resp.status(HttpStatus.UNAUTHORIZED_401)
-                HttpResponseMessage("Cannot execute this deposit. Access denied.")
+                GetMessageResponseDto("Cannot execute this deposit. Access denied.")
             }
             else -> {
                 resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                HttpResponseMessage("Error occurred while executing the deposit.")
+                GetMessageResponseDto("Error occurred while executing the deposit.")
             }
         }
     }

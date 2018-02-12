@@ -20,11 +20,4 @@ class JdbcTransactionRepository(private val jdbcTemplate: JdbcTemplate) : Transa
                     }
                 })
     }
-
-    override fun deleteTransaction(transaction: Transaction): Boolean {
-        return jdbcTemplate.execute("DELETE FROM Transactions WHERE " +
-                "UserId=${transaction.userId} AND AccountId=${transaction.accountId} AND " +
-                "OnDate='${transaction.onDate}' AND Operation='${transaction.operation}' " +
-                "AND Amount=${transaction.amount}") == 1
-    }
 }

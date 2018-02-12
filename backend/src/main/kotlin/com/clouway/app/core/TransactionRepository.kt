@@ -15,11 +15,4 @@ interface TransactionRepository {
      * @return sorted list with the transactions of the specific user (ascending order)
      */
     fun getTransactions(userId: Int): List<Transaction>
-
-    /**
-     * Delete transaction from the DB
-     * @param transaction the DTO which will be deleted in the DB
-     * @return true if the operation was successful, false if there was error
-     */
-    fun deleteTransaction(transaction: Transaction): Boolean
 }

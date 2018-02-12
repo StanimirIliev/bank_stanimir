@@ -4,7 +4,7 @@ import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.post.WithdrawRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
-import com.clouway.app.core.httpresponse.HttpResponseMessage
+import com.clouway.app.core.httpresponse.GetMessageResponseDto
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
@@ -63,7 +63,7 @@ class WithdrawQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.CREATED_201)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("Withdraw successful.")
+                GetMessageResponseDto("Withdraw successful.")
         ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(20f)))
     }
@@ -80,7 +80,7 @@ class WithdrawQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("Cannot execute this withdraw. Not enough balance.")
+                GetMessageResponseDto("Cannot execute this withdraw. Not enough balance.")
         ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(20f)))
     }
@@ -97,7 +97,7 @@ class WithdrawQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.UNAUTHORIZED_401)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("Cannot execute this withdraw. Access denied.")
+                GetMessageResponseDto("Cannot execute this withdraw. Access denied.")
         ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(100f)))
     }

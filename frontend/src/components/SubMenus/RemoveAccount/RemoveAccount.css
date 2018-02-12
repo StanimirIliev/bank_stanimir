@@ -1,7 +1,8 @@
 .remove_account__buttons {
     margin-right: 15px;
-    width: 135px;
-    height: 50px;
-    line-height: 50px;
-    font-size: 19pt;
+    width: 135px !important;
+    height: 50px !important;
+    line-height: 50px !important;
+    font-size: 19pt !important;
+    border-radius: 15px;
 }

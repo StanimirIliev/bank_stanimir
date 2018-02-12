@@ -47,11 +47,9 @@ body {
 }
 
 .button {
-  /* width: 250px; */
   height: 80px;
   color: #555;
   border: none;
-  /* border-radius: 15px; */
   background-color: #fff;
   font-family: 'Encode Sans Condensed', sans-serif;
   font-size: 25pt;

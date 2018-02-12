@@ -4,7 +4,7 @@ import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.post.NewAccountRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
-import com.clouway.app.core.httpresponse.HttpResponseMessage
+import com.clouway.app.core.httpresponse.GetMessageResponseDto
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
@@ -61,7 +61,7 @@ class NewAccountQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.CREATED_201)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("New account opened successful.")
+                GetMessageResponseDto("New account opened successful.")
         ))))
     }
 
@@ -76,7 +76,7 @@ class NewAccountQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("You have already account with such a title.")
+                GetMessageResponseDto("You have already account with such a title.")
         ))))
     }
 
@@ -89,7 +89,7 @@ class NewAccountQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseMessage("Cannot open new account. No title or currency passed with the request.")
+                GetMessageResponseDto("Cannot open new account. No title or currency passed with the request.")
         ))))
     }
 }

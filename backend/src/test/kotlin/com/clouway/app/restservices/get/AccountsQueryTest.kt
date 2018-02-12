@@ -4,7 +4,7 @@ import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.AccountsListRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
-import com.clouway.app.core.httpresponse.HttpResponseAccountsList
+import com.clouway.app.core.httpresponse.GetAccountListResponseDto
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
@@ -60,7 +60,7 @@ class AccountsQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseAccountsList(listOf(
+                GetAccountListResponseDto(listOf(
                         secondAccount.apply { id = secondAccountId },
                         firstAccount.apply { id = firstAccountId }
                 ))
@@ -77,6 +77,6 @@ class AccountsQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpResponseAccountsList(emptyList())))))
+                GetAccountListResponseDto(emptyList())))))
     }
 }

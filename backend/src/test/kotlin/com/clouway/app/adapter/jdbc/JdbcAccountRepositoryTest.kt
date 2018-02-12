@@ -63,8 +63,6 @@ class JdbcAccountRepositoryTest {
             }
 
             override fun getTransactions(userId: Int): List<Transaction> = emptyList()
-
-            override fun deleteTransaction(transaction: Transaction): Boolean = false
         }
         val fakeAccountRepository = JdbcAccountRepository(
                 MySQLJdbcTemplate(dataStoreRule.mySqlDataSource),
