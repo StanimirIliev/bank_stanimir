@@ -22,7 +22,7 @@ class AccountDetails extends Component {
             .then(resp => {
                 this.setState({ loading: false, account: resp.data.account })
             })
-            .catch(error => this.setState({ loading: false, error: error.data.message }))
+            .catch(error => console.log(error))
     }
 
     render() {

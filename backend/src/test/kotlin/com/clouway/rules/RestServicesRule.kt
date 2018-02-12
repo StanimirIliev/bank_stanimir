@@ -9,6 +9,9 @@ import com.clouway.app.adapter.jdbc.JdbcUserRepository
 import com.clouway.app.core.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import com.mysql.cj.jdbc.MysqlDataSource
 import org.apache.http.client.CookieStore
 import org.apache.http.impl.client.BasicCookieStore
@@ -17,6 +20,7 @@ import org.apache.log4j.Logger
 import org.junit.rules.ExternalResource
 import java.io.FileReader
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class RestServicesRule(private val domain: String) : ExternalResource() {
 
@@ -28,7 +32,19 @@ class RestServicesRule(private val domain: String) : ExternalResource() {
     lateinit var mySqlJdbcTemplate: JdbcTemplate
     lateinit var session: Session
     val logger = Logger.getLogger("RestServiceRule")!!
-    val gson = GsonBuilder().setPrettyPrinting().create()!!
+    val gson = GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(LocalDateTime::class.java, object : TypeAdapter<LocalDateTime>() {
+                override fun read(`in`: JsonReader): LocalDateTime {
+                    val value = `in`.nextString()
+                    return LocalDateTime.ofEpochSecond(value.toLong(), 0, ZoneOffset.UTC)
+                }
+
+                override fun write(out: JsonWriter, value: LocalDateTime) {
+                    val timestampValue = value.toInstant(ZoneOffset.UTC).epochSecond
+                    out.value(timestampValue)
+                }
+            }).create()!!
     val transformer = JsonTransformer()
 
     override fun before() {

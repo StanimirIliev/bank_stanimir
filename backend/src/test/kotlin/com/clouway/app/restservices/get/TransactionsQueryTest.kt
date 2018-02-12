@@ -2,7 +2,10 @@ package com.clouway.app.restservices.get
 
 import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.TransactionsRoute
-import com.clouway.app.core.*
+import com.clouway.app.core.Account
+import com.clouway.app.core.Currency
+import com.clouway.app.core.Operation
+import com.clouway.app.core.Transaction
 import com.clouway.app.core.httpresponse.AccountTransactions
 import com.clouway.app.core.httpresponse.GetListAccountTransactionsResponseDto
 import com.clouway.app.core.httpresponse.GetTransactionsCountResponseDto
@@ -11,7 +14,8 @@ import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.eclipse.jetty.http.HttpStatus
-import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.equalTo
 import org.junit.After
 import org.junit.Assert.assertThat
 import org.junit.Before
@@ -19,7 +23,6 @@ import org.junit.Rule
 import org.junit.Test
 import spark.Spark
 import java.nio.charset.Charset
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 class TransactionsQueryTest {
@@ -28,6 +31,7 @@ class TransactionsQueryTest {
     private val domain = "127.0.0.1"
     private val url = "http://$domain:$port/v1/transactions/"
     private lateinit var cookieStore: CookieStore
+
 
     @Before
     fun setUp() {
@@ -60,8 +64,8 @@ class TransactionsQueryTest {
         val request = HttpGet(url + "count")
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
-        assertThat(response.statusLine.statusCode, CoreMatchers.`is`(CoreMatchers.equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, CoreMatchers.`is`(CoreMatchers.equalTo(restServicesRule.gson.toJson(
+        assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
                 GetTransactionsCountResponseDto(1)
         ))))
     }
@@ -73,16 +77,14 @@ class TransactionsQueryTest {
         val accountId = restServicesRule.accountRepository.registerAccount(account)
         val instant = LocalDateTime.of(2018, 1, 18, 18, 17)
         val transaction = Transaction(userId, accountId, instant, Operation.DEPOSIT, 50f)
-        val transactionWithTimestamp = TransactionWithTimestamp(userId, accountId, Timestamp.valueOf(instant), Operation.DEPOSIT,
-                50f)
         restServicesRule.transactionRepository.registerTransaction(transaction)
         val request = HttpGet(url + "1?pageSize=1")
         val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
-        assertThat(response.statusLine.statusCode, CoreMatchers.`is`(CoreMatchers.equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, CoreMatchers.`is`(CoreMatchers.equalTo(restServicesRule.gson.toJson(
+        assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
                 GetListAccountTransactionsResponseDto(listOf(AccountTransactions(account.apply { id = accountId },
-                        listOf(transactionWithTimestamp))))
+                        listOf(transaction))))
         ))))
     }
 }

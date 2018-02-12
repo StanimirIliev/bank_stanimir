@@ -36,7 +36,7 @@ class NewAccount extends Component {
             .catch(error => this.setState({
                 loading: false,
                 message: {
-                    content: error.response.data.message,
+                    content: error.response.data.error,
                     positive: false
                 }
             }))
