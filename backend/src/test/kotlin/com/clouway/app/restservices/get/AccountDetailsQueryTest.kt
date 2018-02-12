@@ -6,6 +6,7 @@ import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
 import com.clouway.app.core.httpresponse.GetAccountResponseDto
 import com.clouway.app.core.httpresponse.GetMessageResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
@@ -73,7 +74,7 @@ class AccountDetailsQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("Account not found.")
+                HttpError("Account not found.")
         ))))
     }
 
@@ -84,7 +85,7 @@ class AccountDetailsQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("Account not found.")
+                HttpError("Account not found.")
         ))))
     }
 }

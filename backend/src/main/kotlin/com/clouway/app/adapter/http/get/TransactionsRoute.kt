@@ -1,11 +1,13 @@
 package com.clouway.app.adapter.http.get
 
 import com.clouway.app.core.*
-import com.clouway.app.core.httpresponse.*
+import com.clouway.app.core.httpresponse.AccountTransactions
+import com.clouway.app.core.httpresponse.GetListAccountTransactionsResponseDto
+import com.clouway.app.core.httpresponse.GetTransactionsCountResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
-import java.sql.Timestamp
 import java.util.*
 
 class TransactionsRoute(
@@ -21,22 +23,16 @@ class TransactionsRoute(
             val pageSize = req.queryParams("pageSize").toIntOrNull()
             if (page == null || pageSize == null) {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return GetMessageResponseDto("pageSize or page parameter is missing.")
+                return HttpError("pageSize or page parameter is missing.")
             }
             val transactions = transactionRepository.getTransactions(session.userId).getFromPage(pageSize, page)
-            val transactionsWithTimestamp = LinkedList<TransactionWithTimestamp>()
-            transactions.forEach {
-                transactionsWithTimestamp.add(TransactionWithTimestamp(
-                        it.userId, it.accountId, Timestamp.valueOf(it.onDate), it.operation, it.amount
-                ))
-            }
             val accountIds = transactions.map { it.accountId }
             val accounts = accountRepository.getAllAccounts(session.userId).filter { accountIds.contains(it.id) }
             val output = LinkedList<AccountTransactions>()
             accounts.forEach {
                 val account = it
                 output.add(AccountTransactions(
-                        account, transactionsWithTimestamp.filter { it.accountId == account.id }
+                        account, transactions.filter { it.accountId == account.id }
                 ))
             }
             return GetListAccountTransactionsResponseDto(output)

@@ -1,14 +1,15 @@
 package com.clouway.app.adapter.http.post
 
 import com.clouway.app.core.AccountRepository
+import com.clouway.app.core.ErrorType.*
 import com.clouway.app.core.SecuredRoute
 import com.clouway.app.core.Session
+import com.clouway.app.core.httpresponse.GetMessageResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import com.google.gson.Gson
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
 import spark.Response
-import com.clouway.app.core.ErrorType.*
-import com.clouway.app.core.httpresponse.GetMessageResponseDto
 
 class WithdrawRoute(private val accountRepository: AccountRepository) : SecuredRoute {
 
@@ -21,7 +22,7 @@ class WithdrawRoute(private val accountRepository: AccountRepository) : SecuredR
         val amount = data.params.value
         if (accountId == null || amount == null) {
             resp.status(HttpStatus.BAD_REQUEST_400)
-            return GetMessageResponseDto("Error. Id or amount parameter not passed.")
+            return HttpError("Error. Id or amount parameter not passed.")
         }
         val operationResponse = accountRepository.updateBalance(accountId, session.userId, amount * -1f)
         if (operationResponse.isSuccessful) {
@@ -31,23 +32,23 @@ class WithdrawRoute(private val accountRepository: AccountRepository) : SecuredR
         return when (operationResponse.error) {
             INCORRECT_ID -> {
                 resp.status(HttpStatus.NOT_FOUND_404)
-                GetMessageResponseDto("Account not found.")
+                HttpError("Account not found.")
             }
             INVALID_REQUEST -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                GetMessageResponseDto("Invalid request.")
+                HttpError("Invalid request.")
             }
             LOW_BALANCE -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                GetMessageResponseDto("Cannot execute this withdraw. Not enough balance.")
+                HttpError("Cannot execute this withdraw. Not enough balance.")
             }
             ACCESS_DENIED -> {
                 resp.status(HttpStatus.UNAUTHORIZED_401)
-                GetMessageResponseDto("Cannot execute this withdraw. Access denied.")
+                HttpError("Cannot execute this withdraw. Access denied.")
             }
             else -> {
                 resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                GetMessageResponseDto("Error occurred while executing the deposit.")
+                HttpError("Error occurred while executing the deposit.")
             }
         }
     }

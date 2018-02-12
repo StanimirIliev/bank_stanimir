@@ -5,6 +5,7 @@ import com.clouway.app.adapter.http.post.NewAccountRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
 import com.clouway.app.core.httpresponse.GetMessageResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
@@ -76,7 +77,7 @@ class NewAccountQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("You have already account with such a title.")
+                HttpError("You have already account with such a title.")
         ))))
     }
 
@@ -89,7 +90,7 @@ class NewAccountQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("Cannot open new account. No title or currency passed with the request.")
+                HttpError("Cannot open new account. No title or currency passed with the request.")
         ))))
     }
 }

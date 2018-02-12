@@ -24,7 +24,7 @@ class AccountDetails extends Component {
             .then(resp => {
                 this.setState({ loading: false, account: resp.data.account })
             })
-            .catch(error => this.setState({ loading: false, error: error.data.content }))
+            .catch(error => this.setState({ loading: false, error: error.data.error }))
     }
 
     deleteAccount() {
@@ -40,7 +40,7 @@ class AccountDetails extends Component {
             .catch(error => this.setState({
                 loading: false,
                 msg: {
-                    content: error.response.data.msg,
+                    content: error.response.data.error,
                     positive: false
                 }
             }))

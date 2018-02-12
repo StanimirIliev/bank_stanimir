@@ -5,6 +5,7 @@ import com.clouway.app.adapter.http.post.DepositRoute
 import com.clouway.app.core.Account
 import com.clouway.app.core.Currency
 import com.clouway.app.core.httpresponse.GetMessageResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpPost
@@ -80,7 +81,7 @@ class DepositQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.UNAUTHORIZED_401)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("Cannot execute this deposit. Access denied.")
+                HttpError("Cannot execute this deposit. Access denied.")
         ))))
         assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId)!!.balance, `is`(equalTo(0f)))
     }
@@ -95,7 +96,7 @@ class DepositQueryTest {
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.BAD_REQUEST_400)))
         assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("Cannot execute this deposit. No account id or value passed with the request.")
+                HttpError("Cannot execute this deposit. No account id or value passed with the request.")
         ))))
     }
 }

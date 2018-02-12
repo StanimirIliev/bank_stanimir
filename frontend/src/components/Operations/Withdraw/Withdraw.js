@@ -29,7 +29,7 @@ class Withdraw extends Component {
             }))
             .catch(error => this.setState({
                 loading: false,
-                error: error.data.content
+                error: error.data.error
             }))
     }
 
@@ -49,7 +49,7 @@ class Withdraw extends Component {
             }))
             .catch(error => this.setState({
                 msg: {
-                    content: error.response.data.message,
+                    content: error.response.data.error,
                     positive: false
                 },
                 loading: false
@@ -62,7 +62,6 @@ class Withdraw extends Component {
 
     render() {
         const { loading, account, id, msg } = this.state
-
         if (loading) {
             return (<Loading />)
         }

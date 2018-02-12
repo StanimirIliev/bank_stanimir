@@ -2,6 +2,7 @@ package com.clouway.app.adapter.http.post
 
 import com.clouway.app.core.*
 import com.clouway.app.core.httpresponse.GetMessageResponseDto
+import com.clouway.app.core.httpresponse.HttpError
 import com.google.gson.Gson
 import org.eclipse.jetty.http.HttpStatus
 import spark.Request
@@ -20,11 +21,11 @@ class NewAccountRoute(private val accountRepository: AccountRepository) : Secure
         when {
             title == null || currency == null -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return GetMessageResponseDto("Cannot open new account. No title or currency passed with the request.")
+                return HttpError("Cannot open new account. No title or currency passed with the request.")
             }
             accounts.any { it.title == title } -> {
                 resp.status(HttpStatus.BAD_REQUEST_400)
-                return GetMessageResponseDto("You have already account with such a title.")
+                return HttpError("You have already account with such a title.")
             }
             accountRepository.registerAccount(Account(title, session.userId, currency, 0f)) != -1 -> {
                 resp.status(HttpStatus.CREATED_201)
@@ -32,7 +33,7 @@ class NewAccountRoute(private val accountRepository: AccountRepository) : Secure
             }
             else -> {
                 resp.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                return GetMessageResponseDto("Unable to open new account.")
+                return HttpError("Unable to open new account.")
             }
         }
     }

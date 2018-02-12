@@ -1,10 +1,11 @@
 package com.clouway.app.adapter.jdbc
 
 import com.clouway.app.core.*
+import com.clouway.app.core.ErrorType.*
+import com.clouway.app.core.Operation.DEPOSIT
+import com.clouway.app.core.Operation.WITHDRAW
 import java.sql.ResultSet
 import java.time.LocalDateTime
-import com.clouway.app.core.ErrorType.*
-import com.clouway.app.core.Operation.*
 
 class JdbcAccountRepository(
         private val jdbcTemplate: JdbcTemplate,

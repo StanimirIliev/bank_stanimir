@@ -7,7 +7,6 @@ import org.apache.log4j.Logger
 import spark.Request
 import spark.Response
 import spark.Route
-import spark.Spark
 import java.time.LocalDateTime
 
 class Secured(

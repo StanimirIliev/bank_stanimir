@@ -40,9 +40,9 @@
 }
 .button--execute {
     width: 150px;
-    height: 40px;
+    height: 40px !important;
     border-radius: 7px;
-    font-size: 18pt;
+    font-size: 18pt !important;
     float: right;
     margin-right: 25%;
     margin-top: 10px;

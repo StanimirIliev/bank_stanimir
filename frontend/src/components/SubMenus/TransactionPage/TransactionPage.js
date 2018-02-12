@@ -3,6 +3,7 @@ import axios from 'axios'
 import Loading from '../../Common/Loading'
 import Money from '../../Common/Money'
 import './TransactionPage.css'
+import moment from 'moment'
 
 export default class TransactionPage extends Component {
     constructor(props) {
@@ -38,10 +39,11 @@ export default class TransactionPage extends Component {
         let numeration = 1
         for (let listIndex = 0; listIndex < list.length; listIndex++) {
             for (let transactionIndex = 0; transactionIndex < list[listIndex].transactions.length; transactionIndex++) {
+                const date = new Date(list[listIndex].transactions[transactionIndex].onDate)
                 transactionsRendering.push(
                     <tr className="table__transaction__body__rows">
                         <td className="table__transaction__columns">{(page - 1) * 20 + numeration++}</td>
-                        <td className="table__transaction__columns">{list[listIndex].transactions[transactionIndex].onDate}</td>
+                        <td className="table__transaction__columns">{moment(date).format('HH:mm MM.DD.YYYY')}</td>
                         <td className="table__transaction__columns">{list[listIndex].account.title}</td>
                         <td className="table__transaction__columns">{list[listIndex].transactions[transactionIndex].operation}</td>
                         <td className="table__transaction__columns">
@@ -55,17 +57,6 @@ export default class TransactionPage extends Component {
                 )
             }
         }
-        // for (let i = 0; i < transactions.length; i++) {
-        //     transactionsRendering.push(
-        //         <tr className="table__transaction__body__rows">
-        //             <td className="table__transaction__columns">{(page - 1) * 20 + i + 1}</td>
-        //             <td className="table__transaction__columns">{transactions[i].onDate}</td>
-        //             <td className="table__transaction__columns">{transactions[i].title}</td>
-        //             <td className="table__transaction__columns">{transactions[i].operation}</td>
-        //             <td className="table__transaction__columns"><Money amount={transactions[i].amount} currency={transactions[i].currency} digits={2} /></td>
-        //         </tr>
-        //     )
-        // }
 
         return (
             <div className="container__transaction" >
