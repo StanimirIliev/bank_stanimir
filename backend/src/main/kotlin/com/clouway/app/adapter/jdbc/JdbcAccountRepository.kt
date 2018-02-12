@@ -34,7 +34,7 @@ class JdbcAccountRepository(
             return OperationResponse(false, INVALID_REQUEST)
         }
         if (jdbcTemplate.execute("UPDATE Accounts SET Balance=${amount + balance} WHERE Id=$accountId " +
-                "AND UserId=$userId") == 1 &&
+                "AND UserId=$userId AND DeletedOn IS NULL") == 1 &&
                 transactionRepository.registerTransaction(Transaction(userId, accountId, LocalDateTime.now(),
                         if (amount < 0) WITHDRAW else DEPOSIT, amount))) {
             return OperationResponse(true, null)
@@ -43,7 +43,7 @@ class JdbcAccountRepository(
     }
 
     override fun getAllAccounts(userId: Int): List<Account> {
-        return jdbcTemplate.fetch("SELECT * FROM Accounts WHERE UserId=$userId",
+        return jdbcTemplate.fetch("SELECT * FROM Accounts WHERE UserId=$userId AND DeletedOn IS NULL",
                 object : RowMapper<Account> {
                     override fun fetch(rs: ResultSet): Account {
                         return Account(rs.getString("Title"), userId,
@@ -57,14 +57,15 @@ class JdbcAccountRepository(
         if (getUserAccount(userId, accountId) == null) {
             return OperationResponse(false, ACCOUNT_NOT_FOUND)
         }
-        if (jdbcTemplate.execute("DELETE FROM Accounts WHERE Id=$accountId") == 1) {
+        if (jdbcTemplate.execute("Update Accounts SET DeletedOn='${LocalDateTime.now()}' WHERE Id=$accountId") == 1) {
             return OperationResponse(true, null)
         }
         return OperationResponse(false, INTERNAL_ERROR)
     }
 
     override fun getUserAccount(userId: Int, accountId: Int): Account? {
-        val list = jdbcTemplate.fetch("SELECT * FROM Accounts WHERE Id=$accountId AND UserId=$userId",
+        val list = jdbcTemplate.fetch("SELECT * FROM Accounts WHERE Id=$accountId AND UserId=$userId " +
+                "AND DeletedOn IS NULL",
                 object : RowMapper<Account> {
                     override fun fetch(rs: ResultSet): Account {
                         return Account(rs.getString("Title"), rs.getInt("UserId"),
@@ -75,7 +76,7 @@ class JdbcAccountRepository(
     }
 
     private fun getBalance(accountId: Int): Float? {
-        val list = jdbcTemplate.fetch("SELECT Balance FROM Accounts WHERE Id=$accountId",
+        val list = jdbcTemplate.fetch("SELECT Balance FROM Accounts WHERE Id=$accountId AND DeletedOn IS NULL",
                 object : RowMapper<Float> {
                     override fun fetch(rs: ResultSet): Float {
                         return rs.getFloat("Balance")

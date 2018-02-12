@@ -2,7 +2,7 @@ package com.clouway.app.restservices.get
 
 import com.clouway.app.adapter.http.Secured
 import com.clouway.app.adapter.http.get.UsersRoute
-import com.clouway.app.core.httpresponse.HttpResponseUsername
+import com.clouway.app.core.httpresponse.GetUsernameResponseDto
 import com.clouway.rules.RestServicesRule
 import org.apache.http.client.CookieStore
 import org.apache.http.client.methods.HttpGet
@@ -54,6 +54,6 @@ class UsernameQueryTest {
         val response = client.execute(request)
         val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
         assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(HttpResponseUsername("user123")))))
+        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(GetUsernameResponseDto("user123")))))
     }
 }

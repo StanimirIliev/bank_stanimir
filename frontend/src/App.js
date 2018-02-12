@@ -110,33 +110,68 @@ if (process.env.NODE_ENV === 'development') {
             message: "Error with the server"
         })
         .onGet('/v1/transactions/1?pageSize=20').reply(200, {
-            transactions: [
+            list: [
                 {
-                    onDate: "Jan 27, 2018 12:47:47 AM",
-                    title: "Some fund",
-                    currency: "BGN",
-                    operation: 'DEPOSIT',
-                    amount: 250.57
+                    "account": {
+                        "title": "Fund for something",
+                        "userId": 2830,
+                        "currency": "BGN",
+                        "balance": 250.5,
+                        "id": 100
+                    },
+                    "transactions": [
+                        {
+                            "userId": 100,
+                            "accountId": 1262,
+                            "onDate": "Jan 27, 2018 12:47:47 AM",
+                            "operation": "DEPOSIT",
+                            "amount": 250.57
+                        }
+                    ]
                 },
                 {
-                    onDate: "Jan 27, 2018 1:53:28 PM",
-                    title: "Another fund",
-                    currency: "EUR",
-                    operation: 'WITHDRAW',
-                    amount: 14000
-                },
+                    "account": {
+                        "title": "Fund for other thing",
+                        "userId": 2830,
+                        "currency": "EUR",
+                        "balance": 550,
+                        "id": 101
+                    },
+                    "transactions": [
+                        {
+                            "userId": 100,
+                            "accountId": 1262,
+                            "onDate": "Jan 27, 2018 1:53:28 PM",
+                            "operation": "WITHDRAW",
+                            "amount": 14000
+                        }
+                    ]
+                }
             ]
         })
-        .onGet(/\/v1\/transactions\/\d+/).reply(200, {transactions: [
-            {
-                onDate: "Jan 27, 2018 1:53:28 PM",
-                title: "Some fund",
-                currency: "BGN",
-                operation: 'WITHDRAW',
-                amount: 14000
-            }
-        ]})
-        .onGet('/v1/transactions/count').reply(200, {transactionsCount: 200})
+        .onGet(/\/v1\/transactions\/\d+/).reply(200, {
+            list: [
+                {
+                    "account": {
+                        "title": "Fund for other thing",
+                        "userId": 2830,
+                        "currency": "EUR",
+                        "balance": 550,
+                        "id": 101
+                    },
+                    "transactions": [
+                        {
+                            "userId": 100,
+                            "accountId": 1262,
+                            "onDate": "Jan 27, 2018 1:53:28 PM",
+                            "operation": "WITHDRAW",
+                            "amount": 14000
+                        }
+                    ]
+                }
+            ]
+        })
+        .onGet('/v1/transactions/count').reply(200, { transactionsCount: 200 })
 }
 else {
     mock.restore()
