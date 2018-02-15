@@ -1,6 +1,7 @@
 package com.clouway.app.adapter.http.post
 
 import com.clouway.app.core.*
+import com.google.gson.Gson
 import freemarker.template.Configuration
 import spark.Request
 import spark.Response
@@ -13,8 +14,11 @@ class RegisterUserHandler(private val userRepository: UserRepository,
                           private val sessionRepository: SessionRepository,
                           private val validator: RequestValidator,
                           private val config: Configuration) : Route {
+    data class Params(val username: String, val password: String, val confirmPassword: String)
+
     override fun handle(req: Request, resp: Response): Any {
         val dataModel = HashMap<String, List<Error>>()
+        val params = Gson().fromJson(req.body(), Params::class.java)
         val template = config.getTemplate("registration.ftlh")
         resp.type("text/html")
         val out = StringWriter()
@@ -25,7 +29,7 @@ class RegisterUserHandler(private val userRepository: UserRepository,
                 template.process(dataModel.apply { put("errors", errorList) }, out)
                 return out.toString()
             }
-            req.queryParams("password") != req.queryParams("confirmPassword") -> {
+            params.password != params.confirmPassword -> {
                 dataModel.put("errors", listOf(Error("The password and the confirm password does not match.")))
                 template.process(dataModel.apply {
                     put("errors", listOf(Error("The password and the " +
@@ -33,8 +37,7 @@ class RegisterUserHandler(private val userRepository: UserRepository,
                 }, out)
                 return out.toString()
             }
-            userRepository.registerUser(req.queryParams("username"),
-                    req.queryParams("password")) == -1 -> {
+            userRepository.registerUser(params.username, params.password) == -1 -> {
                 template.process(dataModel.apply {
                     put("errors",
                             listOf(Error("This username is already taken")))
@@ -42,7 +45,7 @@ class RegisterUserHandler(private val userRepository: UserRepository,
                 return out.toString()
             }
             else -> {
-                val userId = userRepository.getUserId(req.queryParams("username"))
+                val userId = userRepository.getUserId(params.username)
                 val sessionId = sessionRepository.registerSession(Session(
                         userId,
                         LocalDateTime.now(),

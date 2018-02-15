@@ -1,91 +1,80 @@
 package com.clouway.app.restservices.delete
 
-import com.clouway.app.adapter.http.Secured
-import com.clouway.app.adapter.http.delete.RemoveAccountRoute
-import com.clouway.app.core.Account
+import com.clouway.app.App
 import com.clouway.app.core.Currency
-import com.clouway.app.core.httpresponse.GetMessageResponseDto
-import com.clouway.app.core.httpresponse.HttpError
-import com.clouway.rules.RestServicesRule
-import org.apache.http.client.CookieStore
-import org.apache.http.client.methods.HttpDelete
-import org.apache.http.impl.client.HttpClientBuilder
-import org.eclipse.jetty.http.HttpStatus
-import org.hamcrest.CoreMatchers.*
+import com.google.api.client.http.GenericUrl
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.http.json.JsonHttpContent
+import com.google.api.client.json.gson.GsonFactory
+import com.google.appengine.api.datastore.*
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
-import org.junit.Assert.assertThat
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import spark.Spark.*
-import java.nio.charset.Charset
+import java.io.File
 
 class RemoveAccountQueryTest {
 
-    private val port = 8080
-    private val domain = "127.0.0.1"
-    private val url = "http://$domain:$port/v1/accounts/"
-    private lateinit var cookieStore: CookieStore
+    val configDatastore = LocalDatastoreServiceTestConfig().setApplyAllHighRepJobPolicy().setNoStorage(false)
+            .setBackingStoreLocation("tmp/local_db.bin")
+    val helper = LocalServiceTestHelper(configDatastore)
+    lateinit var server: App
+    lateinit var datastore: DatastoreService
 
-    @Rule
-    @JvmField
-    val restServicesRule = RestServicesRule(domain)
 
     @Before
     fun setUp() {
-        cookieStore = restServicesRule.createSessionAndCookie("user123", "password789")
-        port(port)
-        delete("/v1/accounts/:id", Secured(
-                restServicesRule.sessionRepository,
-                RemoveAccountRoute(restServicesRule.accountRepository, restServicesRule.logger),
-                restServicesRule.logger
-        ), restServicesRule.transformer)
-        awaitInitialization()
+        helper.setUp()
+        datastore = DatastoreServiceFactory.getDatastoreService()
+        server = App(datastore)
+        server.start()// start the configured server
     }
 
     @After
-    fun terminate() {
-        stop()
+    fun tearDown() {
+        helper.tearDown()
+        File(configDatastore.backingStoreLocation).delete()
+        server.stop()
     }
+
+    data class Params(val params: Values)
+    data class Values(val username: String, val password: String, val confirmPassword: String)
+    data class Params1(val title: String, val currency: Currency)
+    data class Wrapper(val params: Params1)
 
     @Test
     fun removeAccountAsAuthorizedUser() {
-        val userId = restServicesRule.session.userId
-        val accountId = restServicesRule.accountRepository.registerAccount(Account("Fund for something", userId,
-                Currency.BGN, 0f))
-        val request = HttpDelete(url + accountId)
-        val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
-        val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
-        assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.OK_200)))
-        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                GetMessageResponseDto("This account has been removed successfully.")
-        ))))
-        assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId), `is`(nullValue()))
-    }
-
-    @Test
-    fun tryToRemoveAccountAsUnauthorizedUser() {
-        val userId = restServicesRule.userRepository.registerUser("otherUser", "password123")
-        val account = Account("Fund for something", userId, Currency.BGN, 0f)
-        val accountId = restServicesRule.accountRepository.registerAccount(account)
-        val request = HttpDelete(url + accountId)
-        val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
-        val responseContent = response.entity.content.readBytes().toString(Charset.defaultCharset())
-        assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
-        assertThat(responseContent, `is`(equalTo(restServicesRule.gson.toJson(
-                HttpError("Account not found.")
-        ))))
-        assertThat(restServicesRule.accountRepository.getUserAccount(userId, accountId), `is`(equalTo(account.apply { id = accountId })))
-    }
-
-    @Test
-    fun tryToRemoveAccountWithoutPassingAParameter() {
-        val userId = restServicesRule.session.userId
-        restServicesRule.userRepository.registerUser("otherUser", "password123")
-        val account = Account("Fund for something", userId, Currency.BGN, 0f)
-        restServicesRule.accountRepository.registerAccount(account)
-        val request = HttpDelete(url)
-        val response = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(request)
-        assertThat(response.statusLine.statusCode, `is`(equalTo(HttpStatus.NOT_FOUND_404)))
+        //register user
+        var response = NetHttpTransport()
+                .createRequestFactory()
+                .buildPostRequest(
+                        GenericUrl("http://127.0.0.1:8080/registration"),
+                        JsonHttpContent(GsonFactory.getDefaultInstance(),
+                                mapOf(
+                                        "username" to "user123",
+                                        "password" to "password123",
+                                        "confirmPassword" to "password123"
+                                ))
+                )
+                .execute()
+        println("Status code: ${response.statusCode}")
+        println("Response parse as string: ${response.parseAsString()}")
+        assertThat(response.statusCode, `is`(equalTo(200)))
+        // create new account
+        response = NetHttpTransport()
+                .createRequestFactory()
+                .buildPostRequest(
+                        GenericUrl("http://127.0.0.1:8080/accounts"),
+                        JsonHttpContent(GsonFactory.getDefaultInstance(),
+                                Wrapper(Params1("Fund for something", Currency.BGN)))
+                )
+                .execute()
+        println("Status code: ${response.statusCode}")
+        println("Response parse as string: ${response.parseAsString()}")
+        assertThat(response.statusCode, `is`(equalTo(200)))
     }
 }
